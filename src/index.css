@@ -6,6 +6,7 @@
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   }
+
   .text-shadow-lg {
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
   }
@@ -13,18 +14,41 @@
 
 /* Custom Animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.02); }
+
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
 }
 
 @keyframes ink-spread {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(2.5); opacity: 0.1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0.1;
+  }
 }
 
 .animate-float {
@@ -33,4 +57,172 @@
 
 .animate-breathe {
   animation: breathe 4s ease-in-out infinite;
+}
+
+/* ========== Mobile Responsive Styles ========== */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+
+  /* Reduce overall padding */
+  .p-8 {
+    padding: 1rem;
+  }
+
+  .p-6 {
+    padding: 0.75rem;
+  }
+
+  /* Reduce gap between elements */
+  .gap-8 {
+    gap: 1rem;
+  }
+
+  .gap-4 {
+    gap: 0.5rem;
+  }
+
+  /* Smaller avatars in chat */
+  .mobile-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  /* Better touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hide non-essential elements on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Show mobile-only elements */
+  .show-mobile {
+    display: flex !important;
+  }
+
+  /* Compact stats bar */
+  .stats-compact .stat-item:nth-child(n+3) {
+    display: none;
+  }
+
+  /* Full-width modals */
+  .modal-mobile {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+
+  /* Even smaller text */
+  .text-lg {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  /* Smaller chat bubbles */
+  .max-w-\[75\%\] {
+    max-width: 85%;
+  }
+
+  /* Reduce message padding */
+  .message-bubble {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Smaller avatars */
+  .chat-avatar {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Reduce margins */
+  .mb-6 {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Compact header */
+  .game-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Stack toolbar buttons */
+  .toolbar-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Safe area for notched phones */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-top {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+}
+
+/* Touch-friendly scrolling */
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 113, 108, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 113, 108, 0.3);
+  border-radius: 2px;
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Landscape mobile adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .min-h-\[600px\] {
+    min-height: auto;
+  }
+
+  .h-\[90vh\] {
+    height: auto;
+    min-height: 80vh;
+  }
 }

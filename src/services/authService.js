@@ -23,8 +23,16 @@ const simpleHash = (str) => {
  * 获取所有用户
  */
 const getUsers = () => {
-    const usersJson = localStorage.getItem(USERS_KEY);
-    return usersJson ? JSON.parse(usersJson) : {};
+    try {
+        const usersJson = localStorage.getItem(USERS_KEY);
+        if (!usersJson) return {};
+        const parsed = JSON.parse(usersJson);
+        // 确保返回的是对象
+        return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch (e) {
+        console.error('读取用户数据失败:', e);
+        return {};
+    }
 };
 
 /**
@@ -41,7 +49,10 @@ const saveUsers = (users) => {
  * @returns {{ success: boolean, message: string, user?: object }}
  */
 export const register = (username, password) => {
-    if (!username || username.length < 2) {
+    // 去除用户名前后空格
+    const trimmedUsername = username ? username.trim() : '';
+
+    if (!trimmedUsername || trimmedUsername.length < 2) {
         return { success: false, message: '用户名至少需要2个字符' };
     }
     if (!password || password.length < 4) {
@@ -50,21 +61,21 @@ export const register = (username, password) => {
 
     const users = getUsers();
 
-    if (users[username]) {
+    if (users[trimmedUsername]) {
         return { success: false, message: '该用户名已被注册' };
     }
 
     const user = {
-        username,
+        username: trimmedUsername,
         passwordHash: simpleHash(password),
         createdAt: new Date().toISOString()
     };
 
-    users[username] = user;
+    users[trimmedUsername] = user;
     saveUsers(users);
 
     // 自动登录
-    const safeUser = { username, createdAt: user.createdAt };
+    const safeUser = { username: trimmedUsername, createdAt: user.createdAt };
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeUser));
 
     return { success: true, message: '注册成功', user: safeUser };
@@ -77,14 +88,18 @@ export const register = (username, password) => {
  * @returns {{ success: boolean, message: string, user?: object }}
  */
 export const login = (username, password) => {
-    if (!username || !password) {
+    // 去除用户名前后空格
+    const trimmedUsername = username ? username.trim() : '';
+
+    if (!trimmedUsername || !password) {
         return { success: false, message: '请输入用户名和密码' };
     }
 
     const users = getUsers();
-    const user = users[username];
+    const user = users[trimmedUsername];
 
     if (!user) {
+        console.log('登录失败: 用户不存在', { 输入的用户名: trimmedUsername, 已注册用户: Object.keys(users) });
         return { success: false, message: '用户不存在' };
     }
 
@@ -92,7 +107,7 @@ export const login = (username, password) => {
         return { success: false, message: '密码错误' };
     }
 
-    const safeUser = { username, createdAt: user.createdAt };
+    const safeUser = { username: trimmedUsername, createdAt: user.createdAt };
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeUser));
 
     return { success: true, message: '登录成功', user: safeUser };

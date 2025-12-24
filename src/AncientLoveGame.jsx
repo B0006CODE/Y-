@@ -105,21 +105,22 @@ const ParticleBackground = ({ type = 'flower' }) => {
 };
 
 const LatticeBorder = ({ children, className = "" }) => (
-    <div className={`relative p-8 ${className}`}>
-        <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-stone-800 rounded-tl-lg opacity-80">
-            <div className="absolute top-2 left-2 w-12 h-12 border-t border-l border-stone-600" />
+    <div className={`relative p-4 md:p-8 ${className}`}>
+        {/* 装饰边角 - 移动端缩小 */}
+        <div className="absolute top-0 left-0 w-8 h-8 md:w-16 md:h-16 border-t-2 border-l-2 border-stone-800 rounded-tl-lg opacity-80">
+            <div className="absolute top-1 left-1 md:top-2 md:left-2 w-6 h-6 md:w-12 md:h-12 border-t border-l border-stone-600" />
         </div>
-        <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-stone-800 rounded-tr-lg opacity-80">
-            <div className="absolute top-2 right-2 w-12 h-12 border-t border-r border-stone-600" />
+        <div className="absolute top-0 right-0 w-8 h-8 md:w-16 md:h-16 border-t-2 border-r-2 border-stone-800 rounded-tr-lg opacity-80">
+            <div className="absolute top-1 right-1 md:top-2 md:right-2 w-6 h-6 md:w-12 md:h-12 border-t border-r border-stone-600" />
         </div>
-        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-stone-800 rounded-bl-lg opacity-80">
-            <div className="absolute bottom-2 left-2 w-12 h-12 border-b border-l border-stone-600" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 md:w-16 md:h-16 border-b-2 border-l-2 border-stone-800 rounded-bl-lg opacity-80">
+            <div className="absolute bottom-1 left-1 md:bottom-2 md:left-2 w-6 h-6 md:w-12 md:h-12 border-b border-l border-stone-600" />
         </div>
-        <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-stone-800 rounded-br-lg opacity-80">
-            <div className="absolute bottom-2 right-2 w-12 h-12 border-b border-r border-stone-600" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 md:w-16 md:h-16 border-b-2 border-r-2 border-stone-800 rounded-br-lg opacity-80">
+            <div className="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-6 h-6 md:w-12 md:h-12 border-b border-r border-stone-600" />
         </div>
 
-        <div className="relative z-10 bg-stone-50/90 backdrop-blur-sm border border-stone-200 shadow-xl rounded-sm p-6 min-h-[600px] h-full flex flex-col transition-all duration-500">
+        <div className="relative z-10 bg-stone-50/90 backdrop-blur-sm border border-stone-200 shadow-xl rounded-sm p-3 md:p-6 min-h-[400px] md:min-h-[600px] h-full flex flex-col transition-all duration-500 safe-area-bottom">
             {children}
         </div>
     </div>
@@ -174,10 +175,10 @@ const ChatMessage = ({ role, content }) => {
     return (
         <div className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start items-start'}`}>
 
-            {/* Avatar for Assistant */}
+            {/* Avatar for Assistant - 移动端缩小 */}
             {!isUser && (
-                <div className="mr-4 shrink-0 flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full border-2 border-stone-300 overflow-hidden bg-stone-200 shadow-md">
+                <div className="mr-2 md:mr-4 shrink-0 flex flex-col items-center">
+                    <div className="w-10 h-10 md:w-16 md:h-16 rounded-full border-2 border-stone-300 overflow-hidden bg-stone-200 shadow-md">
                         {avatarUrl ? (
                             <img src={avatarUrl} alt={speaker} className="w-full h-full object-cover" />
                         ) : (
@@ -186,7 +187,7 @@ const ChatMessage = ({ role, content }) => {
                             </div>
                         )}
                     </div>
-                    {speaker && <span className="mt-1 text-xs text-stone-500 font-serif">{speaker}</span>}
+                    {speaker && <span className="mt-1 text-xs text-stone-500 font-serif hidden sm:inline">{speaker}</span>}
                 </div>
             )}
 
@@ -201,13 +202,13 @@ const ChatMessage = ({ role, content }) => {
                 ))}
             </div>
 
-            {/* Avatar for User (Heroine) */}
+            {/* Avatar for User (Heroine) - 移动端缩小 */}
             {isUser && (
-                <div className="ml-4 shrink-0 flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full border-2 border-stone-300 overflow-hidden bg-stone-200 shadow-md">
+                <div className="ml-2 md:ml-4 shrink-0 flex flex-col items-center">
+                    <div className="w-10 h-10 md:w-16 md:h-16 rounded-full border-2 border-stone-300 overflow-hidden bg-stone-200 shadow-md">
                         <img src={CHARACTERS.heroine.avatar} alt="我" className="w-full h-full object-cover" />
                     </div>
-                    <span className="mt-1 text-xs text-stone-500 font-serif">我</span>
+                    <span className="mt-1 text-xs text-stone-500 font-serif hidden sm:inline">我</span>
                 </div>
             )}
         </div>
@@ -434,92 +435,93 @@ export default function AncientLoveGame() {
             <CloudPattern />
             <ParticleBackground type="flower" />
 
-            <div className="container mx-auto px-4 py-8 h-screen flex items-center justify-center relative z-20">
-                <LatticeBorder className="w-full max-w-4xl h-[90vh]">
+            <div className="container mx-auto px-2 md:px-4 py-4 md:py-8 h-screen flex items-center justify-center relative z-20">
+                <LatticeBorder className="w-full max-w-4xl h-[95vh] md:h-[90vh]">
 
-                    {/* Header / Stats */}
-                    <div className="flex justify-between items-start mb-6 border-b border-stone-200 pb-4 shrink-0">
-                        <div className="flex gap-4 md:gap-8 w-full overflow-x-auto">
+                    {/* Header / Stats - 移动端堆叠显示 */}
+                    <div className="flex flex-col md:flex-row justify-between items-start mb-3 md:mb-6 border-b border-stone-200 pb-3 md:pb-4 shrink-0 gap-2">
+                        <div className="flex gap-2 md:gap-4 lg:gap-8 w-full overflow-x-auto pb-1">
                             <StatBar icon={Heart} label="好感" value={stats.affinity} color="bg-rose-400" />
                             <StatBar icon={Shield} label="信任" value={stats.trust} color="bg-emerald-400" />
                             <StatBar icon={Crown} label="权势" value={stats.power} color="bg-amber-400" />
                             <StatBar icon={AlertTriangle} label="风险" value={stats.risk} color="bg-stone-800" />
                         </div>
-                        <div className="flex gap-2 ml-4 items-center">
+                        {/* 工具栏 - 移动端自动换行 */}
+                        <div className="flex gap-1 md:gap-2 ml-0 md:ml-4 items-center flex-wrap justify-end w-full md:w-auto">
                             {/* 用户状态 */}
                             {currentUser ? (
                                 <>
-                                    <span className="text-xs text-stone-500 font-serif hidden sm:inline">
+                                    <span className="text-xs text-stone-500 font-serif hidden md:inline">
                                         {currentUser.username}
                                     </span>
                                     <button
                                         onClick={() => { setSaveModalMode('save'); setShowSaveModal(true); }}
-                                        className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
                                         title="存档"
                                     >
-                                        <Save size={18} />
+                                        <Save size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                     <button
                                         onClick={() => { setSaveModalMode('load'); setShowSaveModal(true); }}
-                                        className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
                                         title="读档"
                                     >
-                                        <RotateCcw size={18} />
+                                        <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                     <button
                                         onClick={() => { logout(); setCurrentUser(null); }}
-                                        className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                         title="退出登录"
                                     >
-                                        <LogOut size={18} />
+                                        <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                 </>
                             ) : (
                                 <button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="px-3 py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1"
+                                    className="px-2 py-1 md:px-3 md:py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1"
                                 >
                                     <User size={14} />
-                                    登录
+                                    <span className="hidden sm:inline">登录</span>
                                 </button>
                             )}
                             <button
                                 onClick={() => setShowProfile(true)}
-                                className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                 title="人物志"
                             >
-                                <BookOpen size={18} />
+                                <BookOpen size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             <button
                                 onClick={() => setShowGallery(true)}
-                                className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target hidden sm:flex"
                                 title="珍藏画卷"
                             >
-                                <ImageIcon size={18} />
+                                <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
-                            {/* API设置按钮 */}
+                            {/* API设置按钮 - 移动端隐藏 */}
                             <button
                                 onClick={() => setShowSettingsModal(true)}
-                                className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target hidden sm:flex"
                                 title="API 设置"
                             >
-                                <Settings size={18} />
+                                <Settings size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             {/* 游戏设置按钮 */}
                             <button
                                 onClick={() => setShowGameSettingsModal(true)}
-                                className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                 title="游戏设置"
                             >
-                                <Gamepad2 size={18} />
+                                <Gamepad2 size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             {/* 历史记录按钮 */}
                             <button
                                 onClick={() => setShowHistoryModal(true)}
-                                className="p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                 title="对话回顾"
                             >
-                                <History size={18} />
+                                <History size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                         </div>
                     </div>
