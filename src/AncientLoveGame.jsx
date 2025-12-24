@@ -270,17 +270,36 @@ export default function AncientLoveGame() {
     const [suggestedOptions, setSuggestedOptions] = useState(['开始探索', '四处观望', '询问周围的人']);
     const [activeTab, setActiveTab] = useState(0); // 0-2: 选项卡, 3: 自由输入
     const [isListening, setIsListening] = useState(false);
+    const [voiceSupported, setVoiceSupported] = useState(false);
+    const [voiceError, setVoiceError] = useState('');
     const recognitionRef = useRef(null);
 
     // 语音识别初始化
     useEffect(() => {
         // 检查浏览器是否支持 Web Speech API
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
+
+        if (!SpeechRecognition) {
+            console.log('浏览器不支持 Web Speech API');
+            setVoiceError('您的浏览器不支持语音识别功能。建议使用 Chrome 浏览器。');
+            return;
+        }
+
+        // 检查是否为 iOS Safari（不支持 Web Speech API）
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (isIOS && isSafari) {
+            console.log('iOS Safari 不支持 Web Speech API');
+            setVoiceError('iOS Safari 暂不支持语音输入，建议使用 Chrome 浏览器。');
+            return;
+        }
+
+        try {
             const recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = true;
             recognition.lang = 'zh-CN';
+            recognition.maxAlternatives = 1;
 
             recognition.onresult = (event) => {
                 const transcript = Array.from(event.results)
@@ -292,35 +311,87 @@ export default function AncientLoveGame() {
             recognition.onerror = (event) => {
                 console.error('语音识别错误:', event.error);
                 setIsListening(false);
+
+                // 根据错误类型给出提示
+                switch (event.error) {
+                    case 'not-allowed':
+                        setVoiceError('麦克风权限被拒绝。请在浏览器设置中允许麦克风访问。');
+                        break;
+                    case 'no-speech':
+                        setVoiceError('未检测到语音，请再试一次。');
+                        break;
+                    case 'audio-capture':
+                        setVoiceError('未找到麦克风设备。');
+                        break;
+                    case 'network':
+                        setVoiceError('网络连接问题，语音识别需要联网。');
+                        break;
+                    default:
+                        setVoiceError(`语音识别错误: ${event.error}`);
+                }
             };
 
             recognition.onend = () => {
                 setIsListening(false);
             };
 
+            recognition.onstart = () => {
+                setVoiceError(''); // 清除之前的错误
+            };
+
             recognitionRef.current = recognition;
+            setVoiceSupported(true);
+        } catch (error) {
+            console.error('语音识别初始化失败:', error);
+            setVoiceError('语音识别初始化失败');
         }
 
         return () => {
             if (recognitionRef.current) {
-                recognitionRef.current.abort();
+                try {
+                    recognitionRef.current.abort();
+                } catch (e) {
+                    // 忽略中止错误
+                }
             }
         };
     }, []);
 
     // 语音输入切换
-    const toggleListening = () => {
-        if (!recognitionRef.current) {
-            alert('您的浏览器不支持语音识别功能');
+    const toggleListening = async () => {
+        // 清除之前的错误
+        setVoiceError('');
+
+        if (!voiceSupported || !recognitionRef.current) {
+            alert('您的浏览器不支持语音识别功能。\n\n建议：\n1. 使用 Chrome 浏览器\n2. 确保网站使用 HTTPS\n3. iOS 设备请使用 Chrome 而非 Safari');
             return;
         }
 
         if (isListening) {
-            recognitionRef.current.stop();
+            try {
+                recognitionRef.current.stop();
+            } catch (e) {
+                console.error('停止语音识别失败:', e);
+            }
             setIsListening(false);
         } else {
-            recognitionRef.current.start();
-            setIsListening(true);
+            try {
+                // 先请求麦克风权限（对移动端很重要）
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    try {
+                        await navigator.mediaDevices.getUserMedia({ audio: true });
+                    } catch (permError) {
+                        setVoiceError('无法获取麦克风权限。请在浏览器设置中允许访问麦克风。');
+                        return;
+                    }
+                }
+
+                recognitionRef.current.start();
+                setIsListening(true);
+            } catch (e) {
+                console.error('启动语音识别失败:', e);
+                setVoiceError('启动语音识别失败，请重试。');
+            }
         }
     };
 
@@ -675,12 +746,14 @@ export default function AncientLoveGame() {
                                 {/* 语音输入按钮 */}
                                 <button
                                     onClick={toggleListening}
-                                    disabled={loading}
+                                    disabled={loading || !voiceSupported}
                                     className={`p-2 rounded-full transition-colors ${isListening
                                         ? 'bg-rose-500 text-white animate-pulse'
-                                        : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'
+                                        : voiceSupported
+                                            ? 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'
+                                            : 'text-stone-300 cursor-not-allowed'
                                         } disabled:opacity-50`}
-                                    title={isListening ? '点击停止录音' : '点击开始语音输入'}
+                                    title={!voiceSupported ? '您的浏览器不支持语音输入' : (isListening ? '点击停止录音' : '点击开始语音输入')}
                                 >
                                     {isListening ? <MicOff size={18} /> : <Mic size={18} />}
                                 </button>
@@ -693,11 +766,21 @@ export default function AncientLoveGame() {
                                     <Send size={20} />
                                 </button>
                             </div>
+                            {/* 语音识别状态提示 */}
                             {isListening && (
                                 <div className="absolute -top-8 left-0 right-0 text-center">
                                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-rose-500 text-white text-xs rounded-full animate-pulse">
                                         <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
                                         正在聆听...
+                                    </span>
+                                </div>
+                            )}
+                            {/* 语音识别错误提示 */}
+                            {voiceError && !isListening && (
+                                <div className="absolute -top-8 left-0 right-0 text-center">
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-white text-xs rounded-full">
+                                        <AlertTriangle size={12} />
+                                        {voiceError}
                                     </span>
                                 </div>
                             )}
