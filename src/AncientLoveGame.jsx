@@ -126,12 +126,14 @@ const LatticeBorder = ({ children, className = "" }) => (
     </div>
 );
 
-const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800" }) => (
-    <div className="flex items-center gap-3 w-full max-w-xs group">
-        <div className="p-2 rounded-full bg-stone-100 border border-stone-200 group-hover:border-stone-400 transition-colors">
-            <Icon size={16} className="text-stone-600" />
+const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800", hideOnMobile = false }) => (
+    <div className={`flex items-center gap-1 md:gap-3 ${hideOnMobile ? 'hidden md:flex' : ''}`}>
+        {/* 移动端紧凑布局: 只显示图标和数值 */}
+        <div className="p-1 md:p-2 rounded-full bg-stone-100 border border-stone-200">
+            <Icon size={14} className="md:w-4 md:h-4 text-stone-600" />
         </div>
-        <div className="flex-1">
+        {/* 桌面端: 显示完整标签和进度条 */}
+        <div className="hidden md:flex flex-1 flex-col max-w-[100px]">
             <div className="flex justify-between text-xs text-stone-500 mb-1 font-serif">
                 <span>{label}</span>
                 <span>{value}%</span>
@@ -143,6 +145,8 @@ const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800" }) => (
                 />
             </div>
         </div>
+        {/* 移动端: 只显示数值 */}
+        <span className="md:hidden text-xs text-stone-600 font-serif min-w-[28px]">{value}%</span>
     </div>
 );
 
@@ -438,13 +442,14 @@ export default function AncientLoveGame() {
             <div className="container mx-auto px-2 md:px-4 py-4 md:py-8 h-screen flex items-center justify-center relative z-20">
                 <LatticeBorder className="w-full max-w-4xl h-[95vh] md:h-[90vh]">
 
-                    {/* Header / Stats - 移动端堆叠显示 */}
-                    <div className="flex flex-col md:flex-row justify-between items-start mb-3 md:mb-6 border-b border-stone-200 pb-3 md:pb-4 shrink-0 gap-2">
-                        <div className="flex gap-2 md:gap-4 lg:gap-8 w-full overflow-x-auto pb-1">
+                    {/* Header / Stats - 移动端简化显示 */}
+                    <div className="flex justify-between items-center mb-3 md:mb-6 border-b border-stone-200 pb-3 md:pb-4 shrink-0">
+                        {/* 状态栏 - 移动端只显示图标+数值 */}
+                        <div className="flex gap-1 md:gap-4 items-center">
                             <StatBar icon={Heart} label="好感" value={stats.affinity} color="bg-rose-400" />
                             <StatBar icon={Shield} label="信任" value={stats.trust} color="bg-emerald-400" />
-                            <StatBar icon={Crown} label="权势" value={stats.power} color="bg-amber-400" />
-                            <StatBar icon={AlertTriangle} label="风险" value={stats.risk} color="bg-stone-800" />
+                            <StatBar icon={Crown} label="权势" value={stats.power} color="bg-amber-400" hideOnMobile />
+                            <StatBar icon={AlertTriangle} label="风险" value={stats.risk} color="bg-stone-800" hideOnMobile />
                         </div>
                         {/* 工具栏 - 移动端自动换行 */}
                         <div className="flex gap-1 md:gap-2 ml-0 md:ml-4 items-center flex-wrap justify-end w-full md:w-auto">
@@ -494,15 +499,15 @@ export default function AncientLoveGame() {
                             </button>
                             <button
                                 onClick={() => setShowGallery(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target hidden sm:flex"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                 title="珍藏画卷"
                             >
                                 <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
-                            {/* API设置按钮 - 移动端隐藏 */}
+                            {/* API设置按钮 */}
                             <button
                                 onClick={() => setShowSettingsModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target hidden sm:flex"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
                                 title="API 设置"
                             >
                                 <Settings size={16} className="md:w-[18px] md:h-[18px]" />
