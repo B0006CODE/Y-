@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, Shield, Crown, Sparkles, Scroll, AlertTriangle, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2 } from 'lucide-react';
+import { Heart, Shield, Crown, Sparkles, Scroll, AlertTriangle, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, Mic, MicOff, MessageSquare, Zap } from 'lucide-react';
+import Markdown from 'react-markdown';
 import { generateGameResponse } from './services/llmService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/storyConfig';
 import { getCurrentUser, logout } from './services/authService';
@@ -201,9 +202,25 @@ const ChatMessage = ({ role, content }) => {
                     ? 'bg-stone-800 text-stone-50 rounded-tr-none shadow-lg'
                     : 'bg-white/80 border border-stone-200 text-stone-900 rounded-tl-none shadow-sm'}
             `}>
-                {displayContent.split('\n').map((line, i) => (
-                    <p key={i} className="mb-2 last:mb-0">{line}</p>
-                ))}
+                <div className="prose prose-stone prose-sm max-w-none">
+                    <Markdown
+                        components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                            li: ({ children }) => <li className="text-inherit">{children}</li>,
+                            strong: ({ children }) => <strong className="font-bold text-amber-700">{children}</strong>,
+                            em: ({ children }) => <em className="italic text-stone-600">{children}</em>,
+                            h1: ({ children }) => <h1 className="text-xl font-bold mb-2 text-stone-800">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-stone-800">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-base font-bold mb-1 text-stone-700">{children}</h3>,
+                            blockquote: ({ children }) => <blockquote className="border-l-4 border-amber-400 pl-4 my-2 italic text-stone-600 bg-amber-50/50 py-1">{children}</blockquote>,
+                            hr: () => <hr className="my-3 border-stone-300" />,
+                        }}
+                    >
+                        {displayContent}
+                    </Markdown>
+                </div>
             </div>
 
             {/* Avatar for User (Heroine) - 移动端缩小 */}
@@ -248,6 +265,64 @@ export default function AncientLoveGame() {
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [showGameSettingsModal, setShowGameSettingsModal] = useState(false);
     const [gameSettings, setGameSettings] = useState(getGameSettings());
+
+    // 选项卡和语音输入状态
+    const [suggestedOptions, setSuggestedOptions] = useState(['开始探索', '四处观望', '询问周围的人']);
+    const [activeTab, setActiveTab] = useState(0); // 0-2: 选项卡, 3: 自由输入
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef(null);
+
+    // 语音识别初始化
+    useEffect(() => {
+        // 检查浏览器是否支持 Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'zh-CN';
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+                setInput(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('语音识别错误:', event.error);
+                setIsListening(false);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+        }
+
+        return () => {
+            if (recognitionRef.current) {
+                recognitionRef.current.abort();
+            }
+        };
+    }, []);
+
+    // 语音输入切换
+    const toggleListening = () => {
+        if (!recognitionRef.current) {
+            alert('您的浏览器不支持语音识别功能');
+            return;
+        }
+
+        if (isListening) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        } else {
+            recognitionRef.current.start();
+            setIsListening(true);
+        }
+    };
 
     // 检查登录状态
     useEffect(() => {
@@ -372,7 +447,18 @@ export default function AncientLoveGame() {
             cleanContent = cleanContent.replace(riskMatch[0], '');
         }
 
-        return cleanContent;
+        // 8. Parse Options: [OPTIONS: 选项1 | 选项2 | 选项3]
+        const optionsMatch = content.match(/\[OPTIONS:\s*(.+?)\]/s);
+        if (optionsMatch) {
+            const optionsStr = optionsMatch[1];
+            const options = optionsStr.split('|').map(opt => opt.trim()).filter(opt => opt.length > 0);
+            if (options.length > 0) {
+                setSuggestedOptions(options.slice(0, 3)); // 最多取三个选项
+            }
+            cleanContent = cleanContent.replace(optionsMatch[0], '');
+        }
+
+        return cleanContent.trim();
     };
 
     const handleCommand = async (cmd) => {
@@ -544,33 +630,85 @@ export default function AncientLoveGame() {
                                 <Loader2 className="animate-spin mr-2" /> 命运推演中...
                             </div>
                         )}
+
+                        {/* 选项区域 - 在对话流中显示，仅在不loading时显示 */}
+                        {!loading && suggestedOptions.length > 0 && (
+                            <div className="mt-4 mb-2">
+                                <div className="flex items-center gap-2 mb-3 text-stone-500">
+                                    <Zap size={16} className="text-amber-500" />
+                                    <span className="text-sm font-serif">你可以选择：</span>
+                                </div>
+                                <div className="grid gap-2">
+                                    {suggestedOptions.map((option, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleCommand(option)}
+                                            className="w-full text-left bg-gradient-to-r from-stone-50 to-stone-100 hover:from-stone-100 hover:to-stone-200 border border-stone-200 hover:border-stone-300 rounded-lg py-3 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 active:translate-y-0 group"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-800 text-stone-50 flex items-center justify-center text-xs font-bold group-hover:bg-amber-600 transition-colors">
+                                                    {idx + 1}
+                                                </span>
+                                                <span className="flex-1">{option}</span>
+                                                <Zap size={14} className="text-stone-400 group-hover:text-amber-500 transition-colors" />
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Input Area */}
-                    <div className="relative shrink-0">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="输入你的行动..."
-                            disabled={loading}
-                            className="w-full bg-white/80 border border-stone-300 rounded-sm py-3 px-4 pr-12 focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-all font-serif placeholder:text-stone-400"
-                        />
-                        <button
-                            onClick={() => handleCommand()}
-                            disabled={loading || !input.trim()}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-stone-500 hover:text-stone-800 disabled:opacity-50 transition-colors"
-                        >
-                            <Send size={20} />
-                        </button>
+                    {/* Input Area - 简洁的自由输入框 */}
+                    <div className="shrink-0">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="或者输入你自己的行动..."
+                                disabled={loading}
+                                className="w-full bg-white/80 border border-stone-300 rounded-sm py-3 px-4 pr-24 focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-all font-serif placeholder:text-stone-400"
+                            />
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                {/* 语音输入按钮 */}
+                                <button
+                                    onClick={toggleListening}
+                                    disabled={loading}
+                                    className={`p-2 rounded-full transition-colors ${isListening
+                                        ? 'bg-rose-500 text-white animate-pulse'
+                                        : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'
+                                        } disabled:opacity-50`}
+                                    title={isListening ? '点击停止录音' : '点击开始语音输入'}
+                                >
+                                    {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                                </button>
+                                {/* 发送按钮 */}
+                                <button
+                                    onClick={() => handleCommand()}
+                                    disabled={loading || !input.trim()}
+                                    className="p-2 text-stone-500 hover:text-stone-800 disabled:opacity-50 transition-colors"
+                                >
+                                    <Send size={20} />
+                                </button>
+                            </div>
+                            {isListening && (
+                                <div className="absolute -top-8 left-0 right-0 text-center">
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-rose-500 text-white text-xs rounded-full animate-pulse">
+                                        <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
+                                        正在聆听...
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                </LatticeBorder>
-            </div>
+                </LatticeBorder >
+            </div >
 
             {/* 登录/注册弹窗 */}
-            <AuthModal
+            < AuthModal
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
                 onSuccess={(user) => setCurrentUser(user)}
@@ -593,7 +731,6 @@ export default function AncientLoveGame() {
                 onLoad={(gameState) => {
                     setStats(gameState.stats);
                     setHistory(gameState.history);
-                    // Load new state if available, otherwise defaults
                     if (gameState.currentScene) setCurrentScene(gameState.currentScene);
                     if (gameState.currentChapter) setCurrentChapter(gameState.currentChapter);
                     if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity);
@@ -643,6 +780,7 @@ export default function AncientLoveGame() {
                 ending={currentEnding}
                 detailedAffinity={detailedAffinity}
             />
-        </div>
+        </div >
     );
 }
+

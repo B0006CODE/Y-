@@ -103,18 +103,18 @@ export const CHARACTERS = {
         disguiseName: '青鸾',
         age: 18,
         background: '前朝名将沈挽澜之女，因父亲蒙冤身死而隐姓埋名入宫。表面柔顺，实则心怀复仇之志。',
-        avatar: '/char_disciple.png' // Placeholder: using disciple image temporarily
+        avatar: '/char_heroine.png'
     }
 };
 
 // ==================== 场景设定 ====================
 export const SCENES = {
     'banquet': { name: '宫宴', image: '/bg_banquet.png' },
-    'garden': { name: '御花园', image: '/bg_banquet.png' }, // Placeholder
-    'study': { name: '御书房', image: '/bg_banquet.png' }, // Placeholder
-    'bedroom': { name: '寝宫', image: '/bg_banquet.png' }, // Placeholder
-    'kitchen': { name: '御膳房', image: '/bg_banquet.png' }, // Placeholder
-    'prison': { name: '天牢', image: '/bg_banquet.png' } // Placeholder
+    'garden': { name: '御花园', image: '/bg_garden.png' },
+    'study': { name: '御书房', image: '/bg_study.png' },
+    'bedroom': { name: '寝宫', image: '/bg_bedroom.png' },
+    'kitchen': { name: '御膳房', image: '/bg_kitchen.png' },
+    'prison': { name: '天牢', image: '/bg_prison.png' }
 };
 
 // ==================== CG/图鉴设定 ====================
