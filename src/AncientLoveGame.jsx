@@ -308,12 +308,14 @@ export default function AncientLoveGame() {
             cleanContent = cleanContent.replace(sceneMatch[0], '');
         }
 
-        // 2. Parse Affinity: [AFFINITY: role_id: value]
+        // 2. Parse Affinity: [AFFINITY: role_id: value] 或 [AFFINITY: role_id value]
         // Note: This might happen multiple times or in stream, so we need to be careful.
         // For simplicity in this version, we'll parse it from the final content string.
-        const affinityRegex = /\[AFFINITY:\s*(\w+):\s*([+-]?\d+)\]/g;
+        const affinityRegex = /\[AFFINITY:\s*(\w+):?\s*([+-]?\d+)\]/g;
         let match;
+        const affinityMatches = [];
         while ((match = affinityRegex.exec(content)) !== null) {
+            affinityMatches.push(match);
             const [fullTag, roleId, valueStr] = match;
             const value = parseInt(valueStr, 10);
 
@@ -328,9 +330,11 @@ export default function AncientLoveGame() {
                 ...prev,
                 affinity: Math.min(100, Math.max(0, prev.affinity + (value > 0 ? 1 : -1)))
             }));
-
-            cleanContent = cleanContent.replace(fullTag, '');
         }
+        // 移除所有匹配到的 AFFINITY 标签
+        affinityMatches.forEach(m => {
+            cleanContent = cleanContent.replace(m[0], '');
+        });
 
         // 3. Parse CG: [UNLOCK_CG: cg_id]
         const cgMatch = content.match(/\[UNLOCK_CG:\s*(\w+)\]/);
@@ -664,6 +668,7 @@ export default function AncientLoveGame() {
                     if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity);
                     if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs);
                 }}
+                gameMode="story"
             />
 
             {/* 图鉴弹窗 */}

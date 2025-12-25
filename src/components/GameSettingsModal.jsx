@@ -88,22 +88,22 @@ export default function GameSettingsModal({ isOpen, onClose, onSettingsChange })
             />
 
             {/* 弹窗内容 */}
-            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-md mx-2 sm:mx-4 overflow-hidden max-h-[90vh]">
                 {/* 装饰边角 */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800" />
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800 pointer-events-none" />
 
                 {/* 关闭按钮 */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1 text-stone-400 hover:text-stone-800 transition-colors z-10"
+                    className="absolute top-3 right-3 p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-full transition-colors z-20"
                 >
                     <X size={20} />
                 </button>
 
-                <div className="p-6">
+                <div className="p-4 sm:p-6 overflow-y-auto">
                     {/* 标题 */}
                     <h2 className="text-2xl font-serif text-center text-stone-800 mb-6">
                         游戏设置

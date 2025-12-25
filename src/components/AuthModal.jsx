@@ -65,24 +65,24 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
             />
 
             {/* 弹窗内容 */}
-            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-md mx-2 sm:mx-4 overflow-hidden">
                 {/* 装饰边角 */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800" />
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800 pointer-events-none" />
 
                 {/* 关闭按钮 */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1 text-stone-400 hover:text-stone-800 transition-colors"
+                    className="absolute top-3 right-3 p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-full transition-colors z-20"
                 >
                     <X size={20} />
                 </button>
 
-                <div className="p-8">
+                <div className="p-6 sm:p-8">
                     {/* 标题 */}
-                    <h2 className="text-2xl font-serif text-center text-stone-800 mb-6">
+                    <h2 className="text-xl sm:text-2xl font-serif text-center text-stone-800 mb-4 sm:mb-6">
                         {mode === 'login' ? '登录' : '注册'}
                     </h2>
 

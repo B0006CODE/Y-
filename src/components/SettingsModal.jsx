@@ -59,22 +59,22 @@ export default function SettingsModal({ isOpen, onClose }) {
             />
 
             {/* 弹窗内容 */}
-            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-lg mx-2 sm:mx-4 overflow-hidden max-h-[90vh] flex flex-col">
                 {/* 装饰边角 */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800" />
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800 pointer-events-none" />
 
                 {/* 关闭按钮 */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1 text-stone-400 hover:text-stone-800 transition-colors z-10"
+                    className="absolute top-3 right-3 p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-full transition-colors z-20"
                 >
                     <X size={20} />
                 </button>
 
-                <div className="p-6">
+                <div className="p-4 sm:p-6 overflow-y-auto">
                     {/* 标题 */}
                     <h2 className="text-2xl font-serif text-center text-stone-800 mb-2 flex items-center justify-center gap-2">
                         <Settings size={24} />
@@ -125,7 +125,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
                                 placeholder="sk-xxxxxxxxxxxxxxxx"
-                                className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm"
+                                className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm text-stone-800 placeholder:text-stone-400"
                             />
                             <button
                                 type="button"
@@ -148,7 +148,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                             value={baseUrl}
                             onChange={(e) => { setBaseUrl(e.target.value); setPreset('custom'); }}
                             placeholder="https://api.example.com/v1"
-                            className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm"
+                            className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm text-stone-800 placeholder:text-stone-400"
                         />
                     </div>
 
@@ -163,7 +163,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                             value={model}
                             onChange={(e) => { setModel(e.target.value); setPreset('custom'); }}
                             placeholder="qwen-plus"
-                            className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm"
+                            className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm text-stone-800 placeholder:text-stone-400"
                         />
                     </div>
 

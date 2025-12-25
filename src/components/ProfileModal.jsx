@@ -33,22 +33,31 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
     const chapterInfo = CHAPTERS[currentChapter];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-stone-50 w-full max-w-5xl rounded-sm shadow-2xl border border-stone-200 flex h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 md:p-4 modal-container">
+            <div className="bg-stone-50 w-full max-w-5xl rounded-sm shadow-2xl border border-stone-200 flex flex-col md:flex-row h-[95vh] md:h-[80vh] overflow-hidden">
 
-                {/* Sidebar - Character List */}
-                <div className="w-64 bg-stone-100 border-r border-stone-200 flex flex-col">
-                    <div className="p-4 border-b border-stone-200">
-                        <h2 className="text-xl font-serif text-stone-800 flex items-center gap-2">
-                            <User className="text-stone-600" />
+                {/* Sidebar - Mobile: horizontal scroll at top, Desktop: vertical sidebar */}
+                <div className="w-full md:w-64 bg-stone-100 border-b md:border-b-0 md:border-r border-stone-200 flex flex-col shrink-0">
+                    <div className="p-3 md:p-4 border-b border-stone-200 flex items-center justify-between">
+                        <h2 className="text-lg md:text-xl font-serif text-stone-800 flex items-center gap-2">
+                            <User className="text-stone-600" size={18} />
                             人物志
                         </h2>
+                        {/* Mobile close button */}
+                        <button
+                            onClick={onClose}
+                            className="md:hidden p-2 hover:bg-stone-200/50 rounded-full transition-colors text-stone-500"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+
+                    {/* Mobile: horizontal scroll, Desktop: vertical list */}
+                    <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto p-2 gap-2 md:gap-0 custom-scrollbar flex-1">
                         {/* Heroine / My Status */}
                         <button
                             onClick={() => setSelectedCharId('heroine')}
-                            className={`w-full text-left p-3 rounded-sm mb-4 flex items-center gap-3 transition-colors ${selectedCharId === 'heroine' ? 'bg-stone-800 text-stone-50 shadow-md' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
+                            className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-4 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === 'heroine' ? 'bg-stone-800 text-stone-50 shadow-md' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
                                 }`}
                         >
                             <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
@@ -60,13 +69,13 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                             </div>
                         </button>
 
-                        <div className="mb-4">
+                        <div className="hidden md:block mb-4">
                             <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">可攻略角色</h3>
                             {allCharacters.filter(c => c.type === 'protagonist').map(char => (
                                 <button
                                     key={char.id}
                                     onClick={() => setSelectedCharId(char.id)}
-                                    className={`w-full text-left p-3 rounded-sm mb-1 flex items-center gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-800 text-stone-50 shadow-md' : 'hover:bg-stone-200 text-stone-700'
+                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-800 text-stone-50 shadow-md' : 'hover:bg-stone-200 text-stone-700'
                                         }`}
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
@@ -86,13 +95,13 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                             ))}
                         </div>
 
-                        <div>
+                        <div className="hidden md:block">
                             <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">重要人物</h3>
                             {allCharacters.filter(c => c.type === 'supporting').map(char => (
                                 <button
                                     key={char.id}
                                     onClick={() => setSelectedCharId(char.id)}
-                                    className={`w-full text-left p-3 rounded-sm mb-1 flex items-center gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-200 text-stone-800' : 'hover:bg-stone-200 text-stone-600'
+                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-200 text-stone-800' : 'hover:bg-stone-200 text-stone-600'
                                         }`}
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">

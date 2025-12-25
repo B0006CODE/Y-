@@ -21,7 +21,7 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
     }, [isOpen, userId]);
 
     const refreshSlots = () => {
-        const userSlots = getSaveSlots(userId);
+        const userSlots = getSaveSlots(userId, gameMode);
         setSlots(userSlots);
     };
 
@@ -52,7 +52,7 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
             }
         }
 
-        const result = saveGame(userId, slot, currentGameState);
+        const result = saveGame(userId, slot, currentGameState, gameMode);
         if (result.success) {
             setMessage({ type: 'success', text: result.message });
             refreshSlots();
@@ -66,7 +66,7 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
     };
 
     const handleLoad = (slot) => {
-        const result = loadGame(userId, slot);
+        const result = loadGame(userId, slot, gameMode);
         if (result.success) {
             onLoad(result.gameState);
             setMessage({ type: 'success', text: result.message });
@@ -84,7 +84,7 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
         if (!confirm('确定要删除这个存档吗？')) {
             return;
         }
-        const result = deleteSave(userId, slot);
+        const result = deleteSave(userId, slot, gameMode);
         if (result.success) {
             setMessage({ type: 'success', text: result.message });
             refreshSlots();
@@ -110,22 +110,22 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
             />
 
             {/* 弹窗内容 */}
-            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="relative bg-stone-50 border-2 border-stone-300 rounded-sm shadow-2xl w-full max-w-lg mx-2 sm:mx-4 overflow-hidden max-h-[90vh]">
                 {/* 装饰边角 */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800" />
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-800 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-800 pointer-events-none" />
 
                 {/* 关闭按钮 */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1 text-stone-400 hover:text-stone-800 transition-colors z-10"
+                    className="absolute top-3 right-3 p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-full transition-colors z-20"
                 >
                     <X size={20} />
                 </button>
 
-                <div className="p-6">
+                <div className="p-4 sm:p-6 overflow-y-auto">
                     {/* 标题 */}
                     <h2 className="text-2xl font-serif text-center text-stone-800 mb-2 flex items-center justify-center gap-2">
                         {mode === 'save' ? (

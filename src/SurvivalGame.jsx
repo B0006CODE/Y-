@@ -271,15 +271,20 @@ export default function SurvivalGame() {
             cleanContent = cleanContent.replace(sceneMatch[0], '');
         }
 
-        // AFFINITY
-        const affinityRegex = /\[AFFINITY:\s*(\w+):\s*([+-]?\d+)\]/g;
+        // AFFINITY - 支持两种格式: [AFFINITY: roleId: +5] 或 [AFFINITY: roleId +5]
+        const affinityRegex = /\[AFFINITY:\s*(\w+):?\s*([+-]?\d+)\]/g;
         let match;
+        const affinityMatches = [];
         while ((match = affinityRegex.exec(content)) !== null) {
+            affinityMatches.push(match);
             const [fullTag, roleId, valueStr] = match;
             const value = parseInt(valueStr, 10);
             setDetailedAffinity(prev => ({ ...prev, [roleId]: (prev[roleId] || 0) + value }));
-            cleanContent = cleanContent.replace(fullTag, '');
         }
+        // 移除所有匹配到的 AFFINITY 标签
+        affinityMatches.forEach(m => {
+            cleanContent = cleanContent.replace(m[0], '');
+        });
 
         // STATS
         const statPatterns = [
@@ -500,7 +505,7 @@ export default function SurvivalGame() {
 
             {/* Modals */}
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={(user) => setCurrentUser(user)} />
-            <SaveModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} mode={saveModalMode} userId={currentUser?.username} currentGameState={{ stats, history, currentScene, currentChapter, detailedAffinity, unlockedCGs }} onLoad={(gameState) => { setStats(gameState.stats); setHistory(gameState.history); if (gameState.currentScene) setCurrentScene(gameState.currentScene); if (gameState.currentChapter) setCurrentChapter(gameState.currentChapter); if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity); if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs); }} gameMode="survival" />
+            <SaveModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} mode={saveModalMode} userId={currentUser?.username} currentGameState={{ stats, history, currentScene, currentChapter, detailedAffinity, unlockedCGs }} onLoad={(gameState) => { gameInitialized.current = true; setStats(gameState.stats); setHistory(gameState.history); if (gameState.currentScene) setCurrentScene(gameState.currentScene); if (gameState.currentChapter) setCurrentChapter(gameState.currentChapter); if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity); if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs); }} gameMode="survival" />
             <GalleryModal isOpen={showGallery} onClose={() => setShowGallery(false)} unlockedCGs={unlockedCGs} gameMode="survival" />
             <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} detailedAffinity={detailedAffinity} currentChapter={currentChapter} gameMode="survival" />
             <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />

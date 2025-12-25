@@ -2,14 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-shadow {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  }
+/* ========== iOS/Android 全局优化 ========== */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
 
-  .text-shadow-lg {
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
-  }
+/* 动态视口高度 - 解决iOS Safari和Android地址栏问题 */
+.min-h-screen-dynamic {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* iOS 安全区域增强 */
+.safe-area-all {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* 防止iOS橡皮筋滚动影响模态框 */
+.modal-container {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 触摸友好按钮 */
+.touch-friendly {
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Custom Animations */
@@ -224,5 +248,40 @@
   .h-\[90vh\] {
     height: auto;
     min-height: 80vh;
+  }
+
+  /* 横屏模式主容器 */
+  .game-container-landscape {
+    height: 100dvh;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* 横屏模式模态框 */
+  .modal-landscape {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  /* 横屏工具栏紧凑化 */
+  .toolbar-landscape {
+    gap: 0.25rem;
+  }
+
+  /* 横屏隐藏非必要元素 */
+  .hide-landscape {
+    display: none !important;
+  }
+
+  /* 游戏选择卡片横屏适配 */
+  .game-card-landscape {
+    height: auto;
+    min-height: 200px;
+    max-height: 300px;
+  }
+
+  /* 对话区域压缩 */
+  .chat-area-landscape {
+    max-height: 50vh;
   }
 }
