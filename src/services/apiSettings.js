@@ -9,7 +9,8 @@ const API_SETTINGS_KEY = 'ancient_love_api_settings';
 const DEFAULT_SETTINGS = {
     apiKey: '',
     baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    model: 'qwen-plus'
+    model: 'qwen-plus',
+    enableThinking: false  // 是否开启模型思考模式
 };
 
 // 支持的模型预设

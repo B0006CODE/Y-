@@ -59,19 +59,27 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk)
             throw new Error('请先在设置中配置 API 密钥');
         }
 
+        // 构建请求体
+        const requestBody = {
+            model: apiSettings.model || "qwen-plus",
+            messages: messages,
+            stream: true,
+            temperature: 0.8,
+            top_p: 0.9
+        };
+
+        // 如果开启了思考模式，添加 enable_thinking 参数
+        if (apiSettings.enableThinking) {
+            requestBody.enable_thinking = true;
+        }
+
         const response = await fetch(`${apiSettings.baseUrl}/chat/completions`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${apiSettings.apiKey}`
             },
-            body: JSON.stringify({
-                model: apiSettings.model || "qwen-plus",
-                messages: messages,
-                stream: true,
-                temperature: 0.8,
-                top_p: 0.9
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {

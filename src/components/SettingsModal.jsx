@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, X, Key, Globe, Cpu, Check, AlertCircle } from 'lucide-react';
+import { Settings, X, Key, Globe, Cpu, Check, AlertCircle, Brain } from 'lucide-react';
 import { getApiSettings, saveApiSettings, MODEL_PRESETS, isApiConfigured } from '../services/apiSettings';
 
 /**
@@ -12,6 +12,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     const [preset, setPreset] = useState('qwen-plus');
     const [saved, setSaved] = useState(false);
     const [showKey, setShowKey] = useState(false);
+    const [enableThinking, setEnableThinking] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -19,6 +20,7 @@ export default function SettingsModal({ isOpen, onClose }) {
             setApiKey(settings.apiKey || '');
             setBaseUrl(settings.baseUrl || '');
             setModel(settings.model || '');
+            setEnableThinking(settings.enableThinking || false);
 
             // 检测当前使用的预设
             const matchedPreset = Object.entries(MODEL_PRESETS).find(
@@ -40,7 +42,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     };
 
     const handleSave = () => {
-        saveApiSettings({ apiKey, baseUrl, model });
+        saveApiSettings({ apiKey, baseUrl, model, enableThinking });
         setSaved(true);
         setTimeout(() => {
             setSaved(false);
@@ -101,8 +103,8 @@ export default function SettingsModal({ isOpen, onClose }) {
                                     key={key}
                                     onClick={() => handlePresetChange(key)}
                                     className={`p-2 text-sm rounded-sm border transition-all font-serif ${preset === key
-                                            ? 'border-stone-800 bg-stone-800 text-stone-50'
-                                            : 'border-stone-300 hover:border-stone-400'
+                                        ? 'border-stone-800 bg-stone-800 text-stone-50'
+                                        : 'border-stone-300 hover:border-stone-400'
                                         }`}
                                 >
                                     {value.name}
@@ -163,6 +165,28 @@ export default function SettingsModal({ isOpen, onClose }) {
                             placeholder="qwen-plus"
                             className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 font-mono text-sm"
                         />
+                    </div>
+
+                    {/* 思考模式开关 */}
+                    <div className="mb-6 p-4 bg-stone-100 rounded-sm border border-stone-200">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Brain size={18} className="text-stone-600" />
+                                <div>
+                                    <span className="text-sm text-stone-700 font-serif">深度思考模式</span>
+                                    <p className="text-xs text-stone-500 mt-0.5">开启后模型会先进行思考再回复，适用于 DeepSeek 等支持的模型</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setEnableThinking(!enableThinking)}
+                                className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${enableThinking ? 'bg-stone-800' : 'bg-stone-300'}`}
+                            >
+                                <span
+                                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${enableThinking ? 'left-7' : 'left-1'}`}
+                                />
+                            </button>
+                        </div>
                     </div>
 
                     {/* 保存按钮 */}
