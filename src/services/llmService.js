@@ -1,9 +1,28 @@
-import { SYSTEM_PROMPT, OPENING_NARRATIVE } from '../config/storyConfig.js';
+import * as StoryConfig from '../config/storyConfig.js';
+import * as SurvivalConfig from '../config/survivalConfig.js';
 import { getApiSettings, isApiConfigured } from './apiSettings.js';
 
-export const generateGameResponse = async (history, userCommand, stats, onChunk) => {
+export const generateGameResponse = async (history, userCommand, stats, onChunk, mode = 'story') => {
+    const config = mode === 'survival' ? SurvivalConfig : StoryConfig;
+    const { SYSTEM_PROMPT, OPENING_NARRATIVE } = config;
+
     // 构建动态系统提示词，包含当前属性
-    const dynamicSystemPrompt = `${SYSTEM_PROMPT}
+    let dynamicSystemPrompt = SYSTEM_PROMPT;
+
+    if (mode === 'survival') {
+        dynamicSystemPrompt += `
+
+## 当前属性值
+- 生命: ${stats.hp}
+- 体温: ${stats.warmth}
+- 饱腹: ${100 - stats.hunger}
+- 理智: ${stats.sanity}
+- 物资: ${stats.supplies}
+
+请根据以上属性值调整剧情走向和角色态度。如果体温或饱腹过低，请在剧情中体现虚弱感。
+`;
+    } else {
+        dynamicSystemPrompt += `
 
 ## 当前属性值
 - 好感: ${stats.affinity}%
@@ -12,7 +31,10 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk)
 - 风险: ${stats.risk}%
 
 请根据以上属性值调整剧情走向和角色态度。
+`;
+    }
 
+    dynamicSystemPrompt += `
 ## 交互选项生成规则
 在每段剧情回复的最后，你必须生成三个推荐选项供玩家选择，格式如下：
 [OPTIONS: 选项1文字 | 选项2文字 | 选项3文字]

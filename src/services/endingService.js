@@ -166,3 +166,178 @@ export const canTriggerFinale = (stats, currentChapter) => {
 export const getAllEndings = () => {
     return Object.values(ENDINGS);
 };
+
+// ==================== 冰封之心结局 ====================
+
+export const SURVIVAL_ENDINGS = {
+    // 恋爱结局
+    LOVE_DOCTOR: {
+        id: 'love_doctor',
+        title: '冰雪消融',
+        character: 'shenBeiChen',
+        description: '沈北辰终于卸下心防，在漫长的寒冬中，你们成为了彼此唯一的温暖。',
+        requirement: '沈北辰好感度最高且 >= 80'
+    },
+    LOVE_CAPTAIN: {
+        id: 'love_captain',
+        title: '守护誓言',
+        character: 'guShiNian',
+        description: '顾时年将你护在身后，许下守护一生的誓言。无论末日如何，有他在便是家。',
+        requirement: '顾时年好感度最高且 >= 80'
+    },
+    LOVE_HACKER: {
+        id: 'love_hacker',
+        title: '数据永恒',
+        character: 'chengYeBai',
+        description: '程夜白在代码中为你写下最浪漫的情书。在这个崩坏的世界里，唯有爱是永恒的算法。',
+        requirement: '程夜白好感度最高且 >= 80'
+    },
+    LOVE_TEACHER: {
+        id: 'love_teacher',
+        title: '春日将至',
+        character: 'jiangNanYan',
+        description: '江南烟的琴声唤醒了沉睡的希望。你们约定，要一起等到冰雪消融的那一天。',
+        requirement: '江南烟好感度最高且 >= 80'
+    },
+    LOVE_RICH: {
+        id: 'love_rich',
+        title: '独占欲',
+        character: 'luZiJin',
+        description: '陆子衿为你打造了专属的地下王国。虽然失去了自由，但你拥有了他全部的爱与疯狂。',
+        requirement: '陆子衿好感度最高且 >= 80'
+    },
+
+    // 中等好感度结局 (50-79)
+    COMPANION_DOCTOR: {
+        id: 'companion_doctor',
+        title: '并肩前行',
+        character: 'shenBeiChen',
+        description: '沈北辰虽未表白，但始终守护在你身边。或许在这个世界里，陪伴就是最长情的告白。',
+        requirement: '沈北辰好感度最高且 50-79'
+    },
+    COMPANION_CAPTAIN: {
+        id: 'companion_captain',
+        title: '战友情深',
+        character: 'guShiNian',
+        description: '顾时年视你为最信任的战友。虽未越雷池，但那份默契与羁绊，胜过千言万语。',
+        requirement: '顾时年好感度最高且 50-79'
+    },
+    COMPANION_HACKER: {
+        id: 'companion_hacker',
+        title: '代码兄弟',
+        character: 'chengYeBai',
+        description: '程夜白称呼你为"最铁的队友"。他教会了你如何在虚拟世界中找到真实。',
+        requirement: '程夜白好感度最高且 50-79'
+    },
+    COMPANION_TEACHER: {
+        id: 'companion_teacher',
+        title: '知心挚友',
+        character: 'jiangNanYan',
+        description: '江南烟成为了你最好的朋友。在每一个寒夜里，他的歌声都是最暖的陪伴。',
+        requirement: '江南烟好感度最高且 50-79'
+    },
+    COMPANION_RICH: {
+        id: 'companion_rich',
+        title: '合作伙伴',
+        character: 'luZiJin',
+        description: '陆子衿将你视为唯一的合作伙伴。在利益与保护之间，他选择了后者。',
+        requirement: '陆子衿好感度最高且 50-79'
+    },
+
+    // 团队结局
+    HOPE_DAWN: {
+        id: 'hope_dawn',
+        title: '曙光降临',
+        character: null,
+        description: '你们找到了逆转寒潮的方法，人类文明得以延续。你的名字将被载入史册。',
+        requirement: '物资 >= 20，理智 >= 60'
+    },
+    SURVIVE_TOGETHER: {
+        id: 'survive_together',
+        title: '一起活下去',
+        character: null,
+        description: '虽然没能拯救世界，但你们幸存了下来。在新的秩序中，生活仍在继续。',
+        requirement: '物资 >= 10，理智 >= 40'
+    },
+
+    // 悲剧结局
+    FROZEN: {
+        id: 'frozen',
+        title: '冰冷长眠',
+        character: null,
+        description: '体温过低，意识逐渐模糊。在风雪中，你陷入了永恒的沉睡。',
+        requirement: '体温 <= 10'
+    },
+    ETERNAL_WINTER: {
+        id: 'eternal_winter',
+        title: '永恒寒冬',
+        character: null,
+        description: '团队分崩离析，最终淹没在无尽的风雪中。',
+        requirement: '理智 < 20'
+    },
+    SACRIFICE: {
+        id: 'sacrifice',
+        title: '牺牲之路',
+        character: null,
+        description: '为了让更多人活下去，你选择了牺牲自己。风雪掩埋了你的身躯，却掩盖不了你的光芒。',
+        requirement: 'HP <= 0'
+    }
+};
+
+/**
+ * 计算生存游戏结局
+ */
+export const calculateSurvivalEnding = (stats, detailedAffinity) => {
+    const { hp, warmth, sanity, supplies } = stats;
+    const highest = getHighestAffinity(detailedAffinity);
+
+    // 1. 死亡结局
+    if (hp <= 0) {
+        return SURVIVAL_ENDINGS.SACRIFICE;
+    }
+
+    // 2. 冻死结局
+    if (warmth <= 10) {
+        return SURVIVAL_ENDINGS.FROZEN;
+    }
+
+    // 3. 崩溃结局
+    if (sanity < 20) {
+        return SURVIVAL_ENDINGS.ETERNAL_WINTER;
+    }
+
+    // 4. 恋爱结局 (好感度 >= 80)
+    if (highest && highest.value >= 80) {
+        switch (highest.roleId) {
+            case 'shenBeiChen': return SURVIVAL_ENDINGS.LOVE_DOCTOR;
+            case 'guShiNian': return SURVIVAL_ENDINGS.LOVE_CAPTAIN;
+            case 'chengYeBai': return SURVIVAL_ENDINGS.LOVE_HACKER;
+            case 'jiangNanYan': return SURVIVAL_ENDINGS.LOVE_TEACHER;
+            case 'luZiJin': return SURVIVAL_ENDINGS.LOVE_RICH;
+        }
+    }
+
+    // 5. 中等好感度结局 (50-79)
+    if (highest && highest.value >= 50) {
+        switch (highest.roleId) {
+            case 'shenBeiChen': return SURVIVAL_ENDINGS.COMPANION_DOCTOR;
+            case 'guShiNian': return SURVIVAL_ENDINGS.COMPANION_CAPTAIN;
+            case 'chengYeBai': return SURVIVAL_ENDINGS.COMPANION_HACKER;
+            case 'jiangNanYan': return SURVIVAL_ENDINGS.COMPANION_TEACHER;
+            case 'luZiJin': return SURVIVAL_ENDINGS.COMPANION_RICH;
+        }
+    }
+
+    // 6. 希望结局
+    if (supplies >= 20 && sanity >= 60) {
+        return SURVIVAL_ENDINGS.HOPE_DAWN;
+    }
+
+    // 7. 生存结局
+    if (supplies >= 10 && sanity >= 40) {
+        return SURVIVAL_ENDINGS.SURVIVE_TOGETHER;
+    }
+
+    // 8. 默认坏结局
+    return SURVIVAL_ENDINGS.ETERNAL_WINTER;
+};

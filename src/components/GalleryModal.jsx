@@ -1,8 +1,11 @@
 import React from 'react';
 import { X, Lock, Image as ImageIcon } from 'lucide-react';
-import { CGS } from '../config/storyConfig';
+import { CGS as StoryCGS } from '../config/storyConfig';
+import { CGS as SurvivalCGS } from '../config/survivalConfig';
 
-const GalleryModal = ({ isOpen, onClose, unlockedCGs = [] }) => {
+const GalleryModal = ({ isOpen, onClose, unlockedCGs = [], gameMode = 'story' }) => {
+    // 根据游戏模式选择 CG 配置
+    const CGS = gameMode === 'survival' ? SurvivalCGS : StoryCGS;
     if (!isOpen) return null;
 
     return (

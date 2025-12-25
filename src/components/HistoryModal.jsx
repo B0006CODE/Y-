@@ -1,11 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import { X, History, User, Bot } from 'lucide-react';
-import { CHARACTER_NAME_MAP, CHARACTERS } from '../config/storyConfig';
+import * as StoryConfig from '../config/storyConfig';
+import * as SurvivalConfig from '../config/survivalConfig';
 
 /**
  * 历史记录回看弹窗组件
  */
-const HistoryModal = ({ isOpen, onClose, history }) => {
+const HistoryModal = ({ isOpen, onClose, history, gameMode = 'story' }) => {
+    // 根据游戏模式选择配置
+    const config = gameMode === 'survival' ? SurvivalConfig : StoryConfig;
+    const { CHARACTER_NAME_MAP, CHARACTERS } = config;
     const scrollRef = useRef(null);
 
     useEffect(() => {
@@ -109,8 +113,8 @@ const HistoryModal = ({ isOpen, onClose, history }) => {
                                             </p>
                                             <div
                                                 className={`inline-block p-3 rounded-sm text-sm font-serif leading-relaxed ${isUser
-                                                        ? 'bg-stone-800 text-stone-50 rounded-tr-none'
-                                                        : 'bg-white border border-stone-200 text-stone-700 rounded-tl-none'
+                                                    ? 'bg-stone-800 text-stone-50 rounded-tr-none'
+                                                    : 'bg-white border border-stone-200 text-stone-700 rounded-tl-none'
                                                     }`}
                                             >
                                                 {parsed.text.split('\n').map((line, i) => (

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Save, FolderOpen, Trash2, X, Clock, Heart, Shield, Crown, AlertTriangle } from 'lucide-react';
+import { Save, FolderOpen, Trash2, X, Clock, Heart, Shield, Crown, AlertTriangle, Thermometer, Brain, Package } from 'lucide-react';
 import { getSaveSlots, saveGame, loadGame, deleteSave } from '../services/saveService';
+import { CHAPTERS as StoryChapters } from '../config/storyConfig';
+import { CHAPTERS as SurvivalChapters } from '../config/survivalConfig';
 
 /**
  * 存档管理弹窗组件
  */
-export default function SaveModal({ isOpen, onClose, mode, userId, currentGameState, onLoad }) {
+export default function SaveModal({ isOpen, onClose, mode, userId, currentGameState, onLoad, gameMode = 'story' }) {
+    // 根据游戏模式选择章节配置
+    const CHAPTERS = gameMode === 'survival' ? SurvivalChapters : StoryChapters;
     const [slots, setSlots] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -185,35 +189,53 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
                                                     {slot.preview}
                                                 </p>
                                                 {/* 章节信息 */}
-                                                {slot.currentChapter && (
+                                                {slot.currentChapter && CHAPTERS[slot.currentChapter] && (
                                                     <p className="text-xs text-stone-400 mb-2 font-serif">
-                                                        📖 {slot.currentChapter === 'prologue' ? '序章·凤入危局'
-                                                            : slot.currentChapter === 'chapter1' ? '第一章·暗流涌动'
-                                                                : slot.currentChapter === 'chapter2' ? '第二章·棋局破晓'
-                                                                    : slot.currentChapter === 'chapter3' ? '第三章·风雨欲来'
-                                                                        : slot.currentChapter === 'finale' ? '终章·凤鸣九霄'
-                                                                            : slot.currentChapter}
+                                                        📖 {CHAPTERS[slot.currentChapter].title}
                                                     </p>
                                                 )}
                                                 {/* 属性预览 */}
                                                 {slot.stats && (
                                                     <div className="flex gap-3 text-xs text-stone-500">
-                                                        <span className="flex items-center gap-1">
-                                                            <Heart size={12} className="text-rose-400" />
-                                                            {slot.stats.affinity}%
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Shield size={12} className="text-emerald-400" />
-                                                            {slot.stats.trust}%
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Crown size={12} className="text-amber-400" />
-                                                            {slot.stats.power}%
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <AlertTriangle size={12} className="text-stone-600" />
-                                                            {slot.stats.risk}%
-                                                        </span>
+                                                        {gameMode === 'survival' ? (
+                                                            <>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Heart size={12} className="text-rose-400" />
+                                                                    {slot.stats.hp}
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Thermometer size={12} className="text-orange-400" />
+                                                                    {slot.stats.warmth}
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Brain size={12} className="text-purple-400" />
+                                                                    {slot.stats.sanity}
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Package size={12} className="text-amber-400" />
+                                                                    {slot.stats.supplies}
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Heart size={12} className="text-rose-400" />
+                                                                    {slot.stats.affinity}%
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Shield size={12} className="text-emerald-400" />
+                                                                    {slot.stats.trust}%
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Crown size={12} className="text-amber-400" />
+                                                                    {slot.stats.power}%
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <AlertTriangle size={12} className="text-stone-600" />
+                                                                    {slot.stats.risk}%
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 )}
                                             </>

@@ -125,8 +125,8 @@ export default function GameSettingsModal({ isOpen, onClose, onSettingsChange })
                                     key={opt.value}
                                     onClick={() => handleChange('fontSize', opt.value)}
                                     className={`py-2 rounded-sm border transition-all font-serif ${settings.fontSize === opt.value
-                                            ? 'border-stone-800 bg-stone-800 text-stone-50'
-                                            : 'border-stone-300 hover:border-stone-400'
+                                        ? 'border-stone-800 bg-stone-800 text-stone-50'
+                                        : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400'
                                         }`}
                                 >
                                     {opt.label}
@@ -152,8 +152,8 @@ export default function GameSettingsModal({ isOpen, onClose, onSettingsChange })
                                     key={opt.value}
                                     onClick={() => handleChange('textSpeed', opt.value)}
                                     className={`py-2 text-sm rounded-sm border transition-all font-serif ${settings.textSpeed === opt.value
-                                            ? 'border-stone-800 bg-stone-800 text-stone-50'
-                                            : 'border-stone-300 hover:border-stone-400'
+                                        ? 'border-stone-800 bg-stone-800 text-stone-50'
+                                        : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400'
                                         }`}
                                 >
                                     {opt.label}

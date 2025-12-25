@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { X, User, Heart, Shield, Star, BookOpen, MapPin } from 'lucide-react';
-import { CHARACTERS, CHAPTERS } from '../config/storyConfig';
+import * as StoryConfig from '../config/storyConfig';
+import * as SurvivalConfig from '../config/survivalConfig';
 
-const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter = 'prologue' }) => {
+const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter = 'prologue', gameMode = 'story' }) => {
+    // 根据游戏模式选择配置
+    const config = gameMode === 'survival' ? SurvivalConfig : StoryConfig;
+    const { CHARACTERS, CHAPTERS } = config;
     const [selectedCharId, setSelectedCharId] = useState('heroine');
 
     if (!isOpen) return null;
@@ -105,7 +109,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                 </div>
 
                 {/* Main Content - Character Detail */}
-                <div className="flex-1 flex flex-col relative bg-[url('/bg_banquet.png')] bg-cover bg-center">
+                <div className={`flex-1 flex flex-col relative bg-cover bg-center ${gameMode === 'survival' ? "bg-[url('/bg_shelter.png')]" : "bg-[url('/bg_banquet.png')]"}`}>
                     <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
 
                     <button

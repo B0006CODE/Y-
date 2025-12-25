@@ -1,13 +1,18 @@
 import React from 'react';
-import { X, Heart, Star, Sparkles } from 'lucide-react';
-import { ENDINGS } from '../services/endingService';
-import { CHARACTERS } from '../config/storyConfig';
+import { X, Heart, Star, Sparkles, Snowflake } from 'lucide-react';
+import { ENDINGS, SURVIVAL_ENDINGS } from '../services/endingService';
+import * as StoryConfig from '../config/storyConfig';
+import * as SurvivalConfig from '../config/survivalConfig';
 
 /**
  * 结局展示弹窗组件
  */
-const EndingModal = ({ isOpen, onClose, ending, detailedAffinity }) => {
+const EndingModal = ({ isOpen, onClose, ending, detailedAffinity, gameMode = 'story' }) => {
     if (!isOpen || !ending) return null;
+
+    // 根据游戏模式选择配置
+    const config = gameMode === 'survival' ? SurvivalConfig : StoryConfig;
+    const { CHARACTERS } = config;
 
     // 获取关联角色信息
     const getCharacterInfo = (characterKey) => {
@@ -25,10 +30,16 @@ const EndingModal = ({ isOpen, onClose, ending, detailedAffinity }) => {
 
     // 根据结局类型确定背景色
     const getBgGradient = () => {
-        if (ending.id.includes('good')) {
-            return 'from-rose-900/90 via-stone-900/95 to-stone-900';
-        } else if (ending.id.includes('tragic') || ending.id.includes('bad')) {
+        if (ending.id.includes('love') || ending.id.includes('good')) {
+            return gameMode === 'survival'
+                ? 'from-cyan-900/90 via-slate-900/95 to-slate-900'
+                : 'from-rose-900/90 via-stone-900/95 to-stone-900';
+        } else if (ending.id.includes('tragic') || ending.id.includes('bad') || ending.id.includes('frozen') || ending.id.includes('sacrifice') || ending.id.includes('eternal')) {
             return 'from-slate-900/95 via-stone-900/95 to-stone-900';
+        } else if (ending.id.includes('companion') || ending.id.includes('survive') || ending.id.includes('hope')) {
+            return gameMode === 'survival'
+                ? 'from-teal-900/90 via-slate-900/95 to-slate-900'
+                : 'from-amber-900/90 via-stone-900/95 to-stone-900';
         }
         return 'from-amber-900/90 via-stone-900/95 to-stone-900';
     };
@@ -66,13 +77,19 @@ const EndingModal = ({ isOpen, onClose, ending, detailedAffinity }) => {
 
                 {/* 结局类型标识 */}
                 <div className="mb-6">
-                    {ending.id.includes('good') ? (
-                        <div className="flex items-center justify-center gap-2 text-rose-300">
-                            <Heart size={20} fill="currentColor" />
+                    {(ending.id.includes('love') || ending.id.includes('good')) ? (
+                        <div className={`flex items-center justify-center gap-2 ${gameMode === 'survival' ? 'text-cyan-300' : 'text-rose-300'}`}>
+                            {gameMode === 'survival' ? <Snowflake size={20} /> : <Heart size={20} fill="currentColor" />}
                             <span className="text-sm font-serif tracking-widest">HAPPY ENDING</span>
-                            <Heart size={20} fill="currentColor" />
+                            {gameMode === 'survival' ? <Snowflake size={20} /> : <Heart size={20} fill="currentColor" />}
                         </div>
-                    ) : ending.id.includes('tragic') ? (
+                    ) : ending.id.includes('companion') ? (
+                        <div className="flex items-center justify-center gap-2 text-teal-300">
+                            <Sparkles size={20} />
+                            <span className="text-sm font-serif tracking-widest">COMPANION ENDING</span>
+                            <Sparkles size={20} />
+                        </div>
+                    ) : (ending.id.includes('tragic') || ending.id.includes('frozen') || ending.id.includes('sacrifice') || ending.id.includes('eternal')) ? (
                         <div className="flex items-center justify-center gap-2 text-slate-400">
                             <Star size={20} />
                             <span className="text-sm font-serif tracking-widest">TRAGIC ENDING</span>
@@ -157,7 +174,7 @@ const EndingModal = ({ isOpen, onClose, ending, detailedAffinity }) => {
 
                 {/* 底部装饰 */}
                 <p className="mt-8 text-stone-600 text-sm font-serif">
-                    — 凤鸣九霄 —
+                    — {gameMode === 'survival' ? '冰封之心' : '凤鸣九霄'} —
                 </p>
             </div>
         </div>
