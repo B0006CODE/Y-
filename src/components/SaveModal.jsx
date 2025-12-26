@@ -1,29 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Save, FolderOpen, Trash2, X, Clock, Heart, Shield, Crown, AlertTriangle, Thermometer, Brain, Package } from 'lucide-react';
-import { getSaveSlots, saveGame, loadGame, deleteSave } from '../services/saveService';
+import { saveGame, loadGame, deleteSave } from '../services/saveService';
 import { CHAPTERS as StoryChapters } from '../config/storyConfig';
 import { CHAPTERS as SurvivalChapters } from '../config/survivalConfig';
 
 /**
  * 存档管理弹窗组件
  */
-export default function SaveModal({ isOpen, onClose, mode, userId, currentGameState, onLoad, gameMode = 'story' }) {
+export default function SaveModal({
+    isOpen,
+    onClose,
+    mode,
+    userId,
+    currentGameState,
+    onLoad,
+    gameMode = 'story',
+    slots = [],
+    onRefresh
+}) {
     // 根据游戏模式选择章节配置
     const CHAPTERS = gameMode === 'survival' ? SurvivalChapters : StoryChapters;
-    const [slots, setSlots] = useState([]);
-    const [selectedSlot, setSelectedSlot] = useState(null);
     const [message, setMessage] = useState({ type: '', text: '' });
-
-    useEffect(() => {
-        if (isOpen && userId) {
-            refreshSlots();
-        }
-    }, [isOpen, userId]);
-
-    const refreshSlots = () => {
-        const userSlots = getSaveSlots(userId, gameMode);
-        setSlots(userSlots);
-    };
 
     if (!isOpen) return null;
 
@@ -38,7 +35,7 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
         });
     };
 
-    const handleSave = (slot) => {
+    const handleSave = async (slot) => {
         if (!currentGameState) {
             setMessage({ type: 'error', text: '没有可保存的游戏数据' });
             return;
@@ -52,10 +49,12 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
             }
         }
 
-        const result = saveGame(userId, slot, currentGameState, gameMode);
+        const result = await saveGame(userId, slot, currentGameState, gameMode);
         if (result.success) {
             setMessage({ type: 'success', text: result.message });
-            refreshSlots();
+            if (onRefresh) {
+                await onRefresh();
+            }
             setTimeout(() => {
                 setMessage({ type: '', text: '' });
                 onClose();
@@ -65,8 +64,8 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
         }
     };
 
-    const handleLoad = (slot) => {
-        const result = loadGame(userId, slot, gameMode);
+    const handleLoad = async (slot) => {
+        const result = await loadGame(userId, slot, gameMode);
         if (result.success) {
             onLoad(result.gameState);
             setMessage({ type: 'success', text: result.message });
@@ -79,25 +78,27 @@ export default function SaveModal({ isOpen, onClose, mode, userId, currentGameSt
         }
     };
 
-    const handleDelete = (slot, e) => {
+    const handleDelete = async (slot, e) => {
         e.stopPropagation();
         if (!confirm('确定要删除这个存档吗？')) {
             return;
         }
-        const result = deleteSave(userId, slot, gameMode);
+        const result = await deleteSave(userId, slot, gameMode);
         if (result.success) {
             setMessage({ type: 'success', text: result.message });
-            refreshSlots();
+            if (onRefresh) {
+                await onRefresh();
+            }
         } else {
             setMessage({ type: 'error', text: result.message });
         }
     };
 
-    const handleSlotClick = (slot) => {
+    const handleSlotClick = async (slot) => {
         if (mode === 'save') {
-            handleSave(slot.slot);
+            await handleSave(slot.slot);
         } else if (!slot.isEmpty) {
-            handleLoad(slot.slot);
+            await handleLoad(slot.slot);
         }
     };
 

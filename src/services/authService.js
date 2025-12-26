@@ -5,6 +5,18 @@
 
 const USERS_KEY = 'ancient_love_users';
 const CURRENT_USER_KEY = 'ancient_love_current_user';
+const AUTH_TOKEN_KEY = 'ancient_love_auth_token';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const IS_SERVER_MODE = !!API_BASE_URL;
+
+const safeParse = (value, fallback) => {
+    if (!value) return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+};
 
 /**
  * 简单哈希函数（非加密安全，仅用于本地演示）
@@ -42,13 +54,44 @@ const saveUsers = (users) => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
+const fetchJson = async (url, options = {}) => {
+    const response = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+        },
+        ...options
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        return { success: false, message: data.message || '请求失败' };
+    }
+    return data;
+};
+
+export const getAuthToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
+
 /**
  * 用户注册
  * @param {string} username - 用户名
  * @param {string} password - 密码
  * @returns {{ success: boolean, message: string, user?: object }}
  */
-export const register = (username, password) => {
+export const register = async (username, password) => {
+    if (IS_SERVER_MODE) {
+        const result = await fetchJson(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+
+        if (result.success && result.user && result.token) {
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(result.user));
+            localStorage.setItem(AUTH_TOKEN_KEY, result.token);
+        }
+
+        return result;
+    }
+
     // 去除用户名前后空格
     const trimmedUsername = username ? username.trim() : '';
 
@@ -87,7 +130,21 @@ export const register = (username, password) => {
  * @param {string} password - 密码
  * @returns {{ success: boolean, message: string, user?: object }}
  */
-export const login = (username, password) => {
+export const login = async (username, password) => {
+    if (IS_SERVER_MODE) {
+        const result = await fetchJson(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+
+        if (result.success && result.user && result.token) {
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(result.user));
+            localStorage.setItem(AUTH_TOKEN_KEY, result.token);
+        }
+
+        return result;
+    }
+
     // 去除用户名前后空格
     const trimmedUsername = username ? username.trim() : '';
 
@@ -118,6 +175,7 @@ export const login = (username, password) => {
  */
 export const logout = () => {
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
 };
 
 /**
@@ -126,7 +184,7 @@ export const logout = () => {
  */
 export const getCurrentUser = () => {
     const userJson = localStorage.getItem(CURRENT_USER_KEY);
-    return userJson ? JSON.parse(userJson) : null;
+    return safeParse(userJson, null);
 };
 
 /**

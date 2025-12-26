@@ -22,7 +22,7 @@ let historySummaryCache = {
  * @param {string} mode - 游戏模式
  * @returns {string} 压缩后的摘要
  */
-const generateLocalSummary = (oldHistory, mode) => {
+const generateLocalSummary = (oldHistory) => {
     if (!oldHistory || oldHistory.length === 0) return '';
 
     // 提取关键信息：玩家的重要选择和关键剧情点
@@ -88,7 +88,7 @@ const processHistoryForAPI = (fullHistory, mode) => {
 
         // 只有当旧历史变化时才重新生成摘要
         if (oldHistory.length !== cache.lastHistoryLength) {
-            summary = generateLocalSummary(oldHistory, mode);
+            summary = generateLocalSummary(oldHistory);
             historySummaryCache[mode] = {
                 lastHistoryLength: oldHistory.length,
                 summary: summary
@@ -275,12 +275,24 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "API request failed");
+            let message = "API request failed";
+            try {
+                const errorData = await response.json();
+                message = errorData?.message || message;
+            } catch {
+                try {
+                    const text = await response.text();
+                    if (text) message = text;
+                } catch {
+                    // ignore
+                }
+            }
+            throw new Error(message);
         }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
+        let buffer = "";
         let fullContent = "";
         let fullReasoning = "";
 
@@ -288,16 +300,19 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n").filter(line => line.trim() !== "");
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
 
             for (const line of lines) {
-                if (line === "data: [DONE]") {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) continue;
+                if (trimmedLine === "data: [DONE]") {
                     return { content: fullContent, reasoning: fullReasoning };
                 }
-                if (line.startsWith("data: ")) {
+                if (trimmedLine.startsWith("data:")) {
                     try {
-                        const json = JSON.parse(line.substring(6));
+                        const json = JSON.parse(trimmedLine.substring(5).trim());
                         const delta = json.choices[0]?.delta;
 
                         if (delta?.reasoning_content) {
@@ -308,7 +323,7 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
                             fullContent += delta.content;
                             if (onChunk) onChunk(delta.content);
                         }
-                    } catch (e) {
+                    } catch {
                         // 忽略解析错误，继续处理下一个块
                     }
                 }

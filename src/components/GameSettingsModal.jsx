@@ -1,61 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Type, Clock, Volume2, VolumeX, Check, RotateCcw } from 'lucide-react';
-
-const SETTINGS_KEY = 'ancient_love_game_settings';
-
-// 默认设置
-const DEFAULT_SETTINGS = {
-    fontSize: 'medium',      // small, medium, large
-    textSpeed: 'normal',     // slow, normal, fast, instant
-    autoPlay: false,
-    autoPlayDelay: 3,        // 自动播放延迟（秒）
-    soundEnabled: true,
-    musicEnabled: true,
-    musicVolume: 70,
-    sfxVolume: 80
-};
-
-/**
- * 获取游戏设置
- */
-export const getGameSettings = () => {
-    const saved = localStorage.getItem(SETTINGS_KEY);
-    if (saved) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-    }
-    return DEFAULT_SETTINGS;
-};
-
-/**
- * 保存游戏设置
- */
-export const saveGameSettings = (settings) => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-};
-
-/**
- * 获取字体大小 CSS 类名
- */
-export const getFontSizeClass = (size) => {
-    switch (size) {
-        case 'small': return 'text-base';
-        case 'large': return 'text-xl';
-        default: return 'text-lg';
-    }
-};
+import { DEFAULT_GAME_SETTINGS, getGameSettings, saveGameSettings } from '../services/gameSettings';
 
 /**
  * 游戏设置弹窗组件
  */
 export default function GameSettingsModal({ isOpen, onClose, onSettingsChange }) {
-    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+    const [settings, setSettings] = useState(getGameSettings());
     const [saved, setSaved] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            setSettings(getGameSettings());
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -76,7 +28,7 @@ export default function GameSettingsModal({ isOpen, onClose, onSettingsChange })
     };
 
     const handleReset = () => {
-        setSettings(DEFAULT_SETTINGS);
+        setSettings(DEFAULT_GAME_SETTINGS);
     };
 
     return (

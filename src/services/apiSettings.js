@@ -4,11 +4,21 @@
  */
 
 const API_SETTINGS_KEY = 'ancient_love_api_settings';
+const PROXY_BASE_URL = import.meta.env.VITE_LLM_BASE_URL;
+
+const safeParse = (value, fallback) => {
+    if (!value) return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+};
 
 // 默认设置
 const DEFAULT_SETTINGS = {
     apiKey: '',
-    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    baseUrl: PROXY_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     model: 'qwen-plus',
     enableThinking: false  // 是否开启模型思考模式
 };
@@ -49,7 +59,7 @@ export const MODEL_PRESETS = {
 export const getApiSettings = () => {
     const settingsJson = localStorage.getItem(API_SETTINGS_KEY);
     if (settingsJson) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(settingsJson) };
+        return { ...DEFAULT_SETTINGS, ...safeParse(settingsJson, {}) };
     }
     return DEFAULT_SETTINGS;
 };
@@ -68,7 +78,8 @@ export const saveApiSettings = (settings) => {
  */
 export const isApiConfigured = () => {
     const settings = getApiSettings();
-    return !!(settings.apiKey && settings.baseUrl);
+    if (!settings.baseUrl) return false;
+    return !!settings.apiKey;
 };
 
 /**

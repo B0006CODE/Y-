@@ -10,6 +10,36 @@ const SAVES_KEYS = {
 };
 const MAX_SLOTS = 5;
 
+const safeParse = (value, fallback) => {
+    if (!value) return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+};
+
+const getAuthHeaders = () => {
+    const token = getAuthToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const fetchJson = async (url, options = {}) => {
+    const response = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+            ...(options.headers || {})
+        },
+        ...options
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        return { success: false, message: data.message || '请求失败' };
+    }
+    return data;
+};
+
 /**
  * 获取存档 Key
  * @param {string} gameMode - 游戏模式 ('story' | 'survival')
@@ -24,7 +54,8 @@ const getSavesKey = (gameMode = 'story') => {
  */
 const getAllSaves = (gameMode = 'story') => {
     const savesJson = localStorage.getItem(getSavesKey(gameMode));
-    return savesJson ? JSON.parse(savesJson) : {};
+    const parsed = safeParse(savesJson, {});
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
 };
 
 /**
@@ -44,12 +75,19 @@ const setAllSaves = (saves, gameMode = 'story') => {
  * @param {string} gameMode - 游戏模式 ('story' | 'survival')
  * @returns {{ success: boolean, message: string }}
  */
-export const saveGame = (userId, slot, gameState, gameMode = 'story') => {
+export const saveGame = async (userId, slot, gameState, gameMode = 'story') => {
     if (!userId) {
         return { success: false, message: '请先登录' };
     }
     if (slot < 1 || slot > MAX_SLOTS) {
         return { success: false, message: '无效的存档槽位' };
+    }
+
+    if (IS_SERVER_MODE) {
+        return fetchJson(`${API_BASE_URL}/saves/${slot}?gameMode=${gameMode}`, {
+            method: 'POST',
+            body: JSON.stringify({ gameState })
+        });
     }
 
     const saves = getAllSaves(gameMode);
@@ -88,9 +126,15 @@ export const saveGame = (userId, slot, gameState, gameMode = 'story') => {
  * @param {string} gameMode - 游戏模式
  * @returns {{ success: boolean, message: string, gameState?: object }}
  */
-export const loadGame = (userId, slot, gameMode = 'story') => {
+export const loadGame = async (userId, slot, gameMode = 'story') => {
     if (!userId) {
         return { success: false, message: '请先登录' };
+    }
+
+    if (IS_SERVER_MODE) {
+        return fetchJson(`${API_BASE_URL}/saves/${slot}?gameMode=${gameMode}`, {
+            method: 'GET'
+        });
     }
 
     const saves = getAllSaves(gameMode);
@@ -113,8 +157,15 @@ export const loadGame = (userId, slot, gameMode = 'story') => {
  * @param {string} gameMode - 游戏模式
  * @returns {Array} 存档列表
  */
-export const getSaveSlots = (userId, gameMode = 'story') => {
+export const getSaveSlots = async (userId, gameMode = 'story') => {
     if (!userId) return [];
+
+    if (IS_SERVER_MODE) {
+        const result = await fetchJson(`${API_BASE_URL}/saves?gameMode=${gameMode}`, {
+            method: 'GET'
+        });
+        return result.slots || [];
+    }
 
     const saves = getAllSaves(gameMode);
     const userSaves = saves[userId] || {};
@@ -142,9 +193,15 @@ export const getSaveSlots = (userId, gameMode = 'story') => {
  * @param {string} gameMode - 游戏模式
  * @returns {{ success: boolean, message: string }}
  */
-export const deleteSave = (userId, slot, gameMode = 'story') => {
+export const deleteSave = async (userId, slot, gameMode = 'story') => {
     if (!userId) {
         return { success: false, message: '请先登录' };
+    }
+
+    if (IS_SERVER_MODE) {
+        return fetchJson(`${API_BASE_URL}/saves/${slot}?gameMode=${gameMode}`, {
+            method: 'DELETE'
+        });
     }
 
     const saves = getAllSaves(gameMode);
@@ -162,3 +219,7 @@ export const deleteSave = (userId, slot, gameMode = 'story') => {
  * 获取最大存档槽位数
  */
 export const getMaxSlots = () => MAX_SLOTS;
+import { getAuthToken } from './authService';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const IS_SERVER_MODE = !!API_BASE_URL;

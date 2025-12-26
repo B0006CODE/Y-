@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Settings, X, Key, Globe, Cpu, Check, AlertCircle, Brain } from 'lucide-react';
 import { getApiSettings, saveApiSettings, MODEL_PRESETS, isApiConfigured } from '../services/apiSettings';
 
@@ -6,29 +6,21 @@ import { getApiSettings, saveApiSettings, MODEL_PRESETS, isApiConfigured } from 
  * API 设置弹窗组件
  */
 export default function SettingsModal({ isOpen, onClose }) {
-    const [apiKey, setApiKey] = useState('');
-    const [baseUrl, setBaseUrl] = useState('');
-    const [model, setModel] = useState('');
-    const [preset, setPreset] = useState('qwen-plus');
+    const initialSettings = getApiSettings();
+    const initialPreset = (() => {
+        const matchedPreset = Object.entries(MODEL_PRESETS).find(
+            ([, value]) => value.baseUrl === initialSettings.baseUrl && value.model === initialSettings.model
+        );
+        return matchedPreset ? matchedPreset[0] : 'custom';
+    })();
+
+    const [apiKey, setApiKey] = useState(initialSettings.apiKey || '');
+    const [baseUrl, setBaseUrl] = useState(initialSettings.baseUrl || '');
+    const [model, setModel] = useState(initialSettings.model || '');
+    const [preset, setPreset] = useState(initialPreset);
     const [saved, setSaved] = useState(false);
     const [showKey, setShowKey] = useState(false);
-    const [enableThinking, setEnableThinking] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            const settings = getApiSettings();
-            setApiKey(settings.apiKey || '');
-            setBaseUrl(settings.baseUrl || '');
-            setModel(settings.model || '');
-            setEnableThinking(settings.enableThinking || false);
-
-            // 检测当前使用的预设
-            const matchedPreset = Object.entries(MODEL_PRESETS).find(
-                ([key, value]) => value.baseUrl === settings.baseUrl && value.model === settings.model
-            );
-            setPreset(matchedPreset ? matchedPreset[0] : 'custom');
-        }
-    }, [isOpen]);
+    const [enableThinking, setEnableThinking] = useState(initialSettings.enableThinking || false);
 
     if (!isOpen) return null;
 

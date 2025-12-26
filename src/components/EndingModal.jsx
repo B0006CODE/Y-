@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { X, Heart, Star, Sparkles, Snowflake } from 'lucide-react';
 import { ENDINGS, SURVIVAL_ENDINGS } from '../services/endingService';
 import * as StoryConfig from '../config/storyConfig';
@@ -8,6 +8,37 @@ import * as SurvivalConfig from '../config/survivalConfig';
  * 结局展示弹窗组件
  */
 const EndingModal = ({ isOpen, onClose, ending, detailedAffinity, gameMode = 'story' }) => {
+    const particles = useMemo(() => {
+        if (!isOpen || !ending) return [];
+
+        const hashString = (value) => {
+            let hash = 0;
+            for (let i = 0; i < value.length; i++) {
+                hash = (hash * 31 + value.charCodeAt(i)) % 100000;
+            }
+            return hash;
+        };
+
+        const pseudoRandom = (seed) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+
+        const baseSeed = hashString(String(ending.id || 'ending'));
+        return Array.from({ length: 20 }, (_, i) => {
+            const left = pseudoRandom(baseSeed + i * 13);
+            const top = pseudoRandom(baseSeed + i * 29);
+            const delay = pseudoRandom(baseSeed + i * 37);
+            const duration = pseudoRandom(baseSeed + i * 43);
+            return {
+                left: `${left * 100}%`,
+                top: `${top * 100}%`,
+                animationDelay: `${delay * 2}s`,
+                animationDuration: `${2 + duration * 2}s`
+            };
+        });
+    }, [isOpen, ending]);
+
     if (!isOpen || !ending) return null;
 
     // 根据游戏模式选择配置
@@ -51,16 +82,11 @@ const EndingModal = ({ isOpen, onClose, ending, detailedAffinity, gameMode = 'st
 
             {/* 装饰粒子效果 */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(20)].map((_, i) => (
+                {particles.map((particle, i) => (
                     <div
                         key={i}
                         className="absolute w-2 h-2 bg-amber-200/30 rounded-full animate-pulse"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 2}s`,
-                            animationDuration: `${2 + Math.random() * 2}s`
-                        }}
+                        style={particle}
                     />
                 ))}
             </div>

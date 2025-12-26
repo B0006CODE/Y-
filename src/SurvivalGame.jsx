@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Heart, Thermometer, Brain, Package, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, Zap, Utensils, Sliders } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
+import { getSaveSlots } from './services/saveService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/survivalConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateSurvivalEnding } from './services/endingService';
@@ -12,7 +13,8 @@ import GalleryModal from './components/GalleryModal';
 import ProfileModal from './components/ProfileModal';
 import EndingModal from './components/EndingModal';
 import HistoryModal from './components/HistoryModal';
-import GameSettingsModal, { getGameSettings, getFontSizeClass } from './components/GameSettingsModal';
+import GameSettingsModal from './components/GameSettingsModal';
+import { getGameSettings, getFontSizeClass } from './services/gameSettings';
 
 // --- Background Components ---
 
@@ -106,7 +108,7 @@ const IceBorder = ({ children, className = "" }) => (
 const StatBar = ({ icon: Icon, label, value, color = "bg-cyan-500", max = 100, hideOnMobile = false }) => (
     <div className={`flex items-center gap-1 md:gap-3 ${hideOnMobile ? 'hidden md:flex' : ''}`}>
         <div className="p-1 md:p-2 rounded-full bg-slate-800 border border-slate-700">
-            <Icon size={14} className="md:w-4 md:h-4 text-slate-400" />
+            {React.createElement(Icon, { size: 14, className: "md:w-4 md:h-4 text-slate-400" })}
         </div>
         <div className="hidden md:flex flex-1 flex-col max-w-[100px]">
             <div className="flex justify-between text-xs text-slate-400 mb-1 font-sans">
@@ -222,6 +224,7 @@ export default function SurvivalGame() {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [saveModalMode, setSaveModalMode] = useState('save');
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [saveSlots, setSaveSlots] = useState([]);
     const [showEndingModal, setShowEndingModal] = useState(false);
     const [currentEnding, setCurrentEnding] = useState(null);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -259,20 +262,21 @@ export default function SurvivalGame() {
     }, []);
 
     useEffect(() => {
-        if (!gameInitialized.current && history.length === 0) {
-            gameInitialized.current = true;
-            resetHistorySummaryCache('survival');
-            handleCommand("开始游戏");
-        }
-    }, []);
-
-    useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [history, streamingContent]);
 
-    const parseResponse = (content) => {
+    const refreshSaveSlots = useCallback(async () => {
+        if (!currentUser) {
+            setSaveSlots([]);
+            return;
+        }
+        const slots = await getSaveSlots(currentUser.username, 'survival');
+        setSaveSlots(slots);
+    }, [currentUser]);
+
+    const parseResponse = useCallback((content) => {
         let cleanContent = content;
 
         // SCENE
@@ -288,8 +292,8 @@ export default function SurvivalGame() {
         const affinityMatches = [];
         while ((match = affinityRegex.exec(content)) !== null) {
             affinityMatches.push(match);
-            const [fullTag, roleId, valueStr] = match;
-            const value = parseInt(valueStr, 10);
+            const roleId = match[1];
+            const value = parseInt(match[2], 10);
             setDetailedAffinity(prev => ({ ...prev, [roleId]: (prev[roleId] || 0) + value }));
         }
         // 移除所有匹配到的 AFFINITY 标签
@@ -357,10 +361,10 @@ export default function SurvivalGame() {
         }
 
         return cleanContent.trim();
-    };
+    }, []);
 
     // 简化的标签清理函数（用于流式输出时实时隐藏标签）
-    const cleanTagsForDisplay = (content) => {
+    const cleanTagsForDisplay = useCallback((content) => {
         return content
             .replace(/\[SCENE:\s*\w+\]/g, '')
             .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
@@ -374,9 +378,9 @@ export default function SurvivalGame() {
             .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
             .replace(/\[OPTIONS:\s*.+?\]/gs, '')
             .trim();
-    };
+    }, []);
 
-    const handleCommand = async (cmd) => {
+    const handleCommand = useCallback(async (cmd) => {
         if (loading) return;
         const userCmd = cmd || input;
         if (!userCmd.trim()) return;
@@ -449,7 +453,25 @@ export default function SurvivalGame() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [
+        loading,
+        input,
+        history,
+        stats,
+        recentChoices,
+        plotProgress,
+        currentChapter,
+        cleanTagsForDisplay,
+        parseResponse
+    ]);
+
+    useEffect(() => {
+        if (!gameInitialized.current && history.length === 0) {
+            gameInitialized.current = true;
+            resetHistorySummaryCache('survival');
+            handleCommand("开始游戏");
+        }
+    }, [handleCommand, history.length]);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -457,6 +479,13 @@ export default function SurvivalGame() {
             handleCommand();
         }
     };
+
+    const openSaveModal = useCallback((mode) => {
+        setSaveModalMode(mode);
+        void refreshSaveSlots()
+            .catch(() => { })
+            .finally(() => setShowSaveModal(true));
+    }, [refreshSaveSlots]);
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden relative selection:bg-cyan-900 selection:text-cyan-50">
@@ -507,8 +536,8 @@ export default function SurvivalGame() {
                             {currentUser ? (
                                 <>
                                     <span className="text-xs text-slate-500 hidden md:inline">{currentUser.username}</span>
-                                    <button onClick={() => { setSaveModalMode('save'); setShowSaveModal(true); }} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><Save size={18} /></button>
-                                    <button onClick={() => { setSaveModalMode('load'); setShowSaveModal(true); }} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><RotateCcw size={18} /></button>
+                                    <button onClick={() => openSaveModal('save')} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><Save size={18} /></button>
+                                    <button onClick={() => openSaveModal('load')} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><RotateCcw size={18} /></button>
                                     <button onClick={() => { logout(); setCurrentUser(null); }} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><LogOut size={18} /></button>
                                 </>
                             ) : (
@@ -591,11 +620,37 @@ export default function SurvivalGame() {
 
             {/* Modals */}
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={(user) => setCurrentUser(user)} />
-            <SaveModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} mode={saveModalMode} userId={currentUser?.username} currentGameState={{ stats, history, currentScene, currentChapter, detailedAffinity, unlockedCGs }} onLoad={(gameState) => { gameInitialized.current = true; setStats(gameState.stats); setHistory(gameState.history); if (gameState.currentScene) setCurrentScene(gameState.currentScene); if (gameState.currentChapter) setCurrentChapter(gameState.currentChapter); if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity); if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs); }} gameMode="survival" />
+            <SaveModal
+                isOpen={showSaveModal}
+                onClose={() => setShowSaveModal(false)}
+                mode={saveModalMode}
+                userId={currentUser?.username}
+                currentGameState={{ stats, history, currentScene, currentChapter, detailedAffinity, unlockedCGs }}
+                onLoad={(gameState) => {
+                    gameInitialized.current = true;
+                    setStats(gameState.stats);
+                    setHistory(gameState.history);
+                    if (gameState.currentScene) setCurrentScene(gameState.currentScene);
+                    if (gameState.currentChapter) setCurrentChapter(gameState.currentChapter);
+                    if (gameState.detailedAffinity) setDetailedAffinity(gameState.detailedAffinity);
+                    if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs);
+                }}
+                gameMode="survival"
+                slots={saveSlots}
+                onRefresh={refreshSaveSlots}
+            />
             <GalleryModal isOpen={showGallery} onClose={() => setShowGallery(false)} unlockedCGs={unlockedCGs} gameMode="survival" />
             <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} detailedAffinity={detailedAffinity} currentChapter={currentChapter} gameMode="survival" />
-            <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
-            <GameSettingsModal isOpen={showGameSettingsModal} onClose={() => setShowGameSettingsModal(false)} onSettingsChange={setGameSettings} />
+            {showSettingsModal && (
+                <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+            )}
+            {showGameSettingsModal && (
+                <GameSettingsModal
+                    isOpen={showGameSettingsModal}
+                    onClose={() => setShowGameSettingsModal(false)}
+                    onSettingsChange={setGameSettings}
+                />
+            )}
             <HistoryModal isOpen={showHistoryModal} onClose={() => setShowHistoryModal(false)} history={history} gameMode="survival" />
             <EndingModal isOpen={showEndingModal} onClose={() => setShowEndingModal(false)} ending={currentEnding} detailedAffinity={detailedAffinity} gameMode="survival" />
         </div>

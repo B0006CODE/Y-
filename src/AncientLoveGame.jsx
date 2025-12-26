@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Heart, Shield, Crown, Sparkles, Scroll, AlertTriangle, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, MessageSquare, Zap } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
+import { getSaveSlots } from './services/saveService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/storyConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateEnding } from './services/endingService';
@@ -12,7 +13,8 @@ import GalleryModal from './components/GalleryModal';
 import ProfileModal from './components/ProfileModal';
 import EndingModal from './components/EndingModal';
 import HistoryModal from './components/HistoryModal';
-import GameSettingsModal, { getGameSettings, getFontSizeClass } from './components/GameSettingsModal';
+import GameSettingsModal from './components/GameSettingsModal';
+import { getGameSettings, getFontSizeClass } from './services/gameSettings';
 
 
 // --- Background Components (Unchanged) ---
@@ -131,7 +133,7 @@ const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800", hideOnMobil
     <div className={`flex items-center gap-1 md:gap-3 ${hideOnMobile ? 'hidden md:flex' : ''}`}>
         {/* 移动端紧凑布局: 只显示图标和数值 */}
         <div className="p-1 md:p-2 rounded-full bg-stone-100 border border-stone-200">
-            <Icon size={14} className="md:w-4 md:h-4 text-stone-600" />
+            {React.createElement(Icon, { size: 14, className: "md:w-4 md:h-4 text-stone-600" })}
         </div>
         {/* 桌面端: 显示完整标签和进度条 */}
         <div className="hidden md:flex flex-1 flex-col max-w-[100px]">
@@ -258,6 +260,7 @@ export default function AncientLoveGame() {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [saveModalMode, setSaveModalMode] = useState('save'); // 'save' | 'load'
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [saveSlots, setSaveSlots] = useState([]);
 
     // 新功能状态
     const [showEndingModal, setShowEndingModal] = useState(false);
@@ -268,7 +271,6 @@ export default function AncientLoveGame() {
 
     // 选项卡状态
     const [suggestedOptions, setSuggestedOptions] = useState(['开始探索', '四处观望', '询问周围的人']);
-    const [activeTab, setActiveTab] = useState(0); // 0-2: 选项卡, 3: 自由输入
 
     // 新增：选择历史追踪（防止选项重复）
     const [recentChoices, setRecentChoices] = useState([]);
@@ -289,15 +291,6 @@ export default function AncientLoveGame() {
         }
     }, []);
 
-    // Initial game start - 使用 ref 防止 React StrictMode 重复调用
-    useEffect(() => {
-        if (!gameInitialized.current && history.length === 0) {
-            gameInitialized.current = true;
-            resetHistorySummaryCache('story');
-            handleCommand("开始游戏");
-        }
-    }, []);
-
     // Auto-scroll
     useEffect(() => {
         if (scrollRef.current) {
@@ -305,8 +298,17 @@ export default function AncientLoveGame() {
         }
     }, [history, streamingContent]);
 
+    const refreshSaveSlots = useCallback(async () => {
+        if (!currentUser) {
+            setSaveSlots([]);
+            return;
+        }
+        const slots = await getSaveSlots(currentUser.username, 'story');
+        setSaveSlots(slots);
+    }, [currentUser]);
+
     // Parse LLM Response for Tags
-    const parseResponse = (content) => {
+    const parseResponse = useCallback((content) => {
         let cleanContent = content;
 
         // 1. Parse Scene: [SCENE: scene_id]
@@ -327,8 +329,8 @@ export default function AncientLoveGame() {
         const affinityMatches = [];
         while ((match = affinityRegex.exec(content)) !== null) {
             affinityMatches.push(match);
-            const [fullTag, roleId, valueStr] = match;
-            const value = parseInt(valueStr, 10);
+            const roleId = match[1];
+            const value = parseInt(match[2], 10);
 
             setDetailedAffinity(prev => ({
                 ...prev,
@@ -430,10 +432,10 @@ export default function AncientLoveGame() {
         }
 
         return cleanContent.trim();
-    };
+    }, [stats, detailedAffinity]);
 
     // 简化的标签清理函数（用于流式输出时实时隐藏标签）
-    const cleanTagsForDisplay = (content) => {
+    const cleanTagsForDisplay = useCallback((content) => {
         return content
             .replace(/\[SCENE:\s*\w+\]/g, '')
             .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
@@ -445,9 +447,9 @@ export default function AncientLoveGame() {
             .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
             .replace(/\[OPTIONS:\s*.+?\]/gs, '')
             .trim();
-    };
+    }, []);
 
-    const handleCommand = async (cmd) => {
+    const handleCommand = useCallback(async (cmd) => {
         if (loading) return;
         const userCmd = cmd || input;
         if (!userCmd.trim()) return;
@@ -523,7 +525,26 @@ export default function AncientLoveGame() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [
+        loading,
+        input,
+        history,
+        stats,
+        recentChoices,
+        plotProgress,
+        currentChapter,
+        cleanTagsForDisplay,
+        parseResponse
+    ]);
+
+    // Initial game start - 使用 ref 防止 React StrictMode 重复调用
+    useEffect(() => {
+        if (!gameInitialized.current && history.length === 0) {
+            gameInitialized.current = true;
+            resetHistorySummaryCache('story');
+            handleCommand("开始游戏");
+        }
+    }, [handleCommand, history.length]);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -531,6 +552,13 @@ export default function AncientLoveGame() {
             handleCommand();
         }
     };
+
+    const openSaveModal = useCallback((mode) => {
+        setSaveModalMode(mode);
+        void refreshSaveSlots()
+            .catch(() => { })
+            .finally(() => setShowSaveModal(true));
+    }, [refreshSaveSlots]);
 
     return (
         <div
@@ -584,14 +612,14 @@ export default function AncientLoveGame() {
                                         {currentUser.username}
                                     </span>
                                     <button
-                                        onClick={() => { setSaveModalMode('save'); setShowSaveModal(true); }}
+                                        onClick={() => openSaveModal('save')}
                                         className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
                                         title="存档"
                                     >
                                         <Save size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                     <button
-                                        onClick={() => { setSaveModalMode('load'); setShowSaveModal(true); }}
+                                        onClick={() => openSaveModal('load')}
                                         className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
                                         title="读档"
                                     >
@@ -755,6 +783,8 @@ export default function AncientLoveGame() {
                     if (gameState.unlockedCGs) setUnlockedCGs(gameState.unlockedCGs);
                 }}
                 gameMode="story"
+                slots={saveSlots}
+                onRefresh={refreshSaveSlots}
             />
 
             {/* 图鉴弹窗 */}
@@ -773,17 +803,21 @@ export default function AncientLoveGame() {
             />
 
             {/* API设置弹窗 */}
-            <SettingsModal
-                isOpen={showSettingsModal}
-                onClose={() => setShowSettingsModal(false)}
-            />
+            {showSettingsModal && (
+                <SettingsModal
+                    isOpen={showSettingsModal}
+                    onClose={() => setShowSettingsModal(false)}
+                />
+            )}
 
             {/* 游戏设置弹窗 */}
-            <GameSettingsModal
-                isOpen={showGameSettingsModal}
-                onClose={() => setShowGameSettingsModal(false)}
-                onSettingsChange={(newSettings) => setGameSettings(newSettings)}
-            />
+            {showGameSettingsModal && (
+                <GameSettingsModal
+                    isOpen={showGameSettingsModal}
+                    onClose={() => setShowGameSettingsModal(false)}
+                    onSettingsChange={(newSettings) => setGameSettings(newSettings)}
+                />
+            )}
 
             {/* 历史记录弹窗 */}
             <HistoryModal

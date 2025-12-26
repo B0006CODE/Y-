@@ -29,9 +29,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
                     setLoading(false);
                     return;
                 }
-                result = register(username, password);
+                result = await register(username, password);
             } else {
-                result = login(username, password);
+                result = await login(username, password);
             }
 
             if (result.success) {
@@ -45,6 +45,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
                 setError(result.message);
             }
         } catch (err) {
+            console.error('Auth error:', err);
             setError('操作失败，请重试');
         } finally {
             setLoading(false);

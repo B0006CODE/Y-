@@ -223,10 +223,10 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
     );
 };
 
-const InfoCard = ({ icon: Icon, title, content }) => (
+const InfoCard = ({ icon, title, content }) => (
     <div className="bg-white/60 p-4 rounded-sm border border-stone-200/50 hover:bg-white/80 transition-colors">
         <div className="flex items-center gap-2 mb-2 text-stone-500 font-serif text-sm">
-            <Icon size={14} />
+            {icon ? icon({ size: 14 }) : null}
             <span>{title}</span>
         </div>
         <p className="text-stone-800 font-serif leading-relaxed">

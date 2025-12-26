@@ -69,6 +69,36 @@ npm run dev
    - **API Key**: 您的 API 密钥
    - **Model**: 模型名称，如 `qwen-plus`
 
+### 后端服务（账号/云存档/LLM 代理）
+
+> 需要 Node.js 18+，并在 `server/` 目录启动。
+
+后端使用 **MySQL 5.7** 存储账号与云存档（首次启动会自动建表）。
+
+```bash
+# 1. 安装依赖
+cd server
+npm install
+
+# 2. 配置环境变量
+copy .env.example .env  # Windows
+# 或：cp .env.example .env  # Linux/macOS
+
+# 3. 启动服务
+npm run dev
+```
+
+前端使用后端服务（根目录创建 `.env.local`）：
+
+```
+VITE_API_BASE_URL=http://localhost:3001/api
+VITE_LLM_BASE_URL=http://localhost:3001/api/v1
+```
+
+> 说明：
+> - 如果你“不提供大模型 Key”，也可以使用后端代理来解决浏览器 CORS：前端仍需要填写自己的 API Key，但请求会走 `VITE_LLM_BASE_URL`（同域）并由后端把 `Authorization` 透传给上游；上游地址由后端的 `LLM_BASE_URL` 决定。
+> - 如果你希望前端直连模型服务（不走后端），请不要设置 `VITE_LLM_BASE_URL`，并确保模型服务允许浏览器跨域请求（CORS）。
+
 ### 生产部署
 
 ```bash
