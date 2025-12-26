@@ -2,7 +2,8 @@ import * as StoryConfig from '../config/storyConfig.js';
 import * as SurvivalConfig from '../config/survivalConfig.js';
 import { getApiSettings, isApiConfigured } from './apiSettings.js';
 
-export const generateGameResponse = async (history, userCommand, stats, onChunk, mode = 'story') => {
+export const generateGameResponse = async (history, userCommand, stats, onChunk, mode = 'story', options = {}) => {
+    const { recentChoices = [], currentStage = 0, currentChapter = 'prologue' } = options;
     const config = mode === 'survival' ? SurvivalConfig : StoryConfig;
     const { SYSTEM_PROMPT, OPENING_NARRATIVE } = config;
 
@@ -34,6 +35,41 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
 `;
     }
 
+    // 添加禁止重复选项的约束
+    if (recentChoices.length > 0) {
+        dynamicSystemPrompt += `
+
+## ⚠️ 禁止重复的选项（极其重要！）
+玩家最近选择的行动如下，你在生成新选项时 **绝对不能** 包含这些内容或类似的表述：
+${recentChoices.map((c, i) => `${i + 1}. "${c}"`).join('\n')}
+
+这些行动已经完成，不应该再次出现。你必须提供全新的、能推动剧情发展的选项。
+`;
+    }
+
+    // 添加剧情进度信息
+    dynamicSystemPrompt += `
+
+## 剧情进度追踪
+当前章节：${currentChapter}
+剧情推进度：${currentStage}/100
+
+### 进度推进规则
+1. 每次回复都应该让剧情有实质性进展，不能原地踏步
+2. 选项必须导向新的剧情内容，而不是重复当前场景
+3. 如果玩家选择了某个行动，下一回合应该展示该行动的**结果**和**后续发展**
+4. 三个选项中必须至少有一个是"推动主线剧情"类型的选项
+
+### 章节推进条件
+- 序章→第一章：与3位以上重要人物有过实质交谈，或触发重要事件
+- 第一章→第二章：发现父亲冤案的第一条线索
+- 第二章→第三章：确认真正的敌人身份
+- 第三章→终章：做出最终抉择
+
+如果满足章节推进条件，请在回复末尾添加 [CHAPTER: 新章节id]
+同时添加 [PROGRESS: +数值] 来表示剧情推进（5-15点）
+`;
+
     dynamicSystemPrompt += `
 ## 交互选项生成规则
 在每段剧情回复的最后，你必须生成三个推荐选项供玩家选择，格式如下：
@@ -41,19 +77,19 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
 
 选项要求：
 1. 每个选项应该是简短的行动描述（8-20字）
-2. 三个选项应该代表不同的策略方向（如：温和/激进/观望，或配合/拒绝/试探等）
+2. 三个选项应该代表不同的策略方向（如：主动出击/谨慎应对/寻求帮助）
 3. 选项内容要符合当前剧情情境和角色身份
 4. 选项不要太相似，要有明显的区分度
-5. 选项应该能够推动剧情发展
+5. **每个选项都必须能推动剧情向前发展**
+6. **禁止提供"观望"、"等待"、"什么都不做"类的消极选项**
 
-⚠️ 重要约束（必须严格遵守）：
-- 不要重复玩家刚才选择的行动！如果玩家说"去探查"，下一轮选项中不能再有"去探查"
-- 每个选项必须是基于当前剧情进度的新行动
-- 玩家的每次选择都应该推进剧情到下一阶段，选项要反映新的剧情状态
-- 如果某个行动已经完成（如探查完毕），则提供探查之后可以采取的行动
+⚠️ 最重要约束：
+- **绝对禁止**重复玩家之前选择过的行动！
+- 如果玩家刚做了"探查"，新选项应该是探查之后的发展，而不是"继续探查"
+- 每一轮选项都应该反映剧情已经向前推进了一步
 
 示例格式：
-[OPTIONS: 微微一笑，欣然应允 | 略显犹豫，委婉推辞 | 反问他有何用意]`;
+[OPTIONS: 向萧煜坦白身份 | 暗中调查谢临渊 | 请求韩青云协助]`;
 
     // 构建消息列表
     const messages = [

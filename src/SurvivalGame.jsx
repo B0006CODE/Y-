@@ -230,6 +230,16 @@ export default function SurvivalGame() {
 
     const [suggestedOptions, setSuggestedOptions] = useState(['呼救', '坚持向前走', '观察那个人影']);
 
+    // 新增：选择历史追踪（防止选项重复）
+    const [recentChoices, setRecentChoices] = useState([]);
+    // 新增：剧情进度追踪
+    const [plotProgress, setPlotProgress] = useState(0);
+
+    // 流式输出节流相关的 refs
+    const lastUpdateTime = useRef(0);
+    const pendingContent = useRef('');
+    const rafId = useRef(null);
+
     // 使用 ref 存储最新 stats 以避免闭包问题
     const statsRef = useRef(stats);
     const affinityRef = useRef(detailedAffinity);
@@ -337,6 +347,14 @@ export default function SurvivalGame() {
             cleanContent = cleanContent.replace(optionsMatch[0], '');
         }
 
+        // PROGRESS
+        const progressMatch = content.match(/\[PROGRESS:\s*([+-]?\d+)\]/);
+        if (progressMatch) {
+            const value = parseInt(progressMatch[1], 10);
+            setPlotProgress(prev => Math.min(100, Math.max(0, prev + value)));
+            cleanContent = cleanContent.replace(progressMatch[0], '');
+        }
+
         return cleanContent.trim();
     };
 
@@ -348,6 +366,14 @@ export default function SurvivalGame() {
         setLoading(true);
         setInput('');
 
+        // 记录用户选择历史（用于防止选项重复）
+        if (userCmd && userCmd !== "开始游戏") {
+            setRecentChoices(prev => {
+                const newChoices = [userCmd, ...prev].slice(0, 5); // 保留最近 5 个选择
+                return newChoices;
+            });
+        }
+
         if (history.length > 0 || userCmd !== "开始游戏") {
             setHistory(prev => [...prev, { role: 'user', content: userCmd }]);
         }
@@ -355,7 +381,23 @@ export default function SurvivalGame() {
         try {
             let currentResponse = "";
             setStreamingContent("");
+            pendingContent.current = '';
 
+            // 节流更新函数 - 每 50ms 最多更新一次 UI
+            const throttledUpdate = (content) => {
+                pendingContent.current = content;
+                const now = Date.now();
+                if (now - lastUpdateTime.current >= 50) {
+                    setStreamingContent(content);
+                    lastUpdateTime.current = now;
+                } else if (!rafId.current) {
+                    rafId.current = requestAnimationFrame(() => {
+                        setStreamingContent(pendingContent.current);
+                        lastUpdateTime.current = Date.now();
+                        rafId.current = null;
+                    });
+                }
+            };
 
             const result = await generateGameResponse(
                 history,
@@ -363,10 +405,21 @@ export default function SurvivalGame() {
                 stats,
                 (chunk) => {
                     currentResponse += chunk;
-                    setStreamingContent(currentResponse);
+                    throttledUpdate(currentResponse);
                 },
-                'survival' // Mode flag
+                'survival', // Mode flag
+                {
+                    recentChoices: recentChoices,
+                    currentStage: plotProgress,
+                    currentChapter: currentChapter
+                }
             );
+
+            // 确保最后一次更新显示完整内容
+            if (rafId.current) {
+                cancelAnimationFrame(rafId.current);
+                rafId.current = null;
+            }
 
             const finalContent = parseResponse(result.content);
             setHistory(prev => [...prev, { role: 'assistant', content: finalContent }]);
@@ -414,6 +467,20 @@ export default function SurvivalGame() {
                             <div className="flex items-center gap-1 text-amber-400 ml-2">
                                 <Package size={16} />
                                 <span className="text-sm font-bold">{stats.supplies}</span>
+                            </div>
+                            {/* 章节和进度显示 */}
+                            <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1 bg-slate-800/80 rounded-full border border-slate-700">
+                                <BookOpen size={14} className="text-cyan-400" />
+                                <span className="text-xs text-slate-300">
+                                    {CHAPTERS[currentChapter]?.title || '序章'}
+                                </span>
+                                <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-cyan-500 transition-all duration-500"
+                                        style={{ width: `${plotProgress}%` }}
+                                    />
+                                </div>
+                                <span className="text-xs text-slate-400">{plotProgress}%</span>
                             </div>
                         </div>
 
