@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Heart, Shield, Crown, Sparkles, Scroll, AlertTriangle, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, MessageSquare, Zap } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { generateGameResponse } from './services/llmService';
+import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/storyConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateEnding } from './services/endingService';
@@ -279,8 +279,7 @@ export default function AncientLoveGame() {
     const lastUpdateTime = useRef(0);
     const pendingContent = useRef('');
     const rafId = useRef(null);
-
-
+    const gameInitialized = useRef(false);
 
     // 检查登录状态
     useEffect(() => {
@@ -290,9 +289,11 @@ export default function AncientLoveGame() {
         }
     }, []);
 
-    // Initial game start
+    // Initial game start - 使用 ref 防止 React StrictMode 重复调用
     useEffect(() => {
-        if (history.length === 0) {
+        if (!gameInitialized.current && history.length === 0) {
+            gameInitialized.current = true;
+            resetHistorySummaryCache('story');
             handleCommand("开始游戏");
         }
     }, []);
@@ -431,6 +432,21 @@ export default function AncientLoveGame() {
         return cleanContent.trim();
     };
 
+    // 简化的标签清理函数（用于流式输出时实时隐藏标签）
+    const cleanTagsForDisplay = (content) => {
+        return content
+            .replace(/\[SCENE:\s*\w+\]/g, '')
+            .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
+            .replace(/\[UNLOCK_CG:\s*\w+\]/g, '')
+            .replace(/\[CHAPTER:\s*\w+\]/g, '')
+            .replace(/\[TRUST:\s*[+-]?\d+\]/g, '')
+            .replace(/\[POWER:\s*[+-]?\d+\]/g, '')
+            .replace(/\[RISK:\s*[+-]?\d+\]/g, '')
+            .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
+            .replace(/\[OPTIONS:\s*.+?\]/gs, '')
+            .trim();
+    };
+
     const handleCommand = async (cmd) => {
         if (loading) return;
         const userCmd = cmd || input;
@@ -457,16 +473,17 @@ export default function AncientLoveGame() {
             setStreamingContent("");
             pendingContent.current = '';
 
-            // 节流更新函数 - 每 50ms 最多更新一次 UI
+            // 节流更新函数 - 每 50ms 最多更新一次 UI，同时清理标签
             const throttledUpdate = (content) => {
                 pendingContent.current = content;
+                const cleanContent = cleanTagsForDisplay(content);
                 const now = Date.now();
                 if (now - lastUpdateTime.current >= 50) {
-                    setStreamingContent(content);
+                    setStreamingContent(cleanContent);
                     lastUpdateTime.current = now;
                 } else if (!rafId.current) {
                     rafId.current = requestAnimationFrame(() => {
-                        setStreamingContent(pendingContent.current);
+                        setStreamingContent(cleanTagsForDisplay(pendingContent.current));
                         lastUpdateTime.current = Date.now();
                         rafId.current = null;
                     });

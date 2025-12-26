@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Heart, Thermometer, Brain, Package, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, Zap, Utensils, Sliders } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { generateGameResponse } from './services/llmService';
+import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/survivalConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateSurvivalEnding } from './services/endingService';
@@ -261,6 +261,7 @@ export default function SurvivalGame() {
     useEffect(() => {
         if (!gameInitialized.current && history.length === 0) {
             gameInitialized.current = true;
+            resetHistorySummaryCache('survival');
             handleCommand("开始游戏");
         }
     }, []);
@@ -358,6 +359,23 @@ export default function SurvivalGame() {
         return cleanContent.trim();
     };
 
+    // 简化的标签清理函数（用于流式输出时实时隐藏标签）
+    const cleanTagsForDisplay = (content) => {
+        return content
+            .replace(/\[SCENE:\s*\w+\]/g, '')
+            .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
+            .replace(/\[UNLOCK_CG:\s*\w+\]/g, '')
+            .replace(/\[CHAPTER:\s*\w+\]/g, '')
+            .replace(/\[HP:\s*[+-]?\d+\]/g, '')
+            .replace(/\[WARMTH:\s*[+-]?\d+\]/g, '')
+            .replace(/\[HUNGER:\s*[+-]?\d+\]/g, '')
+            .replace(/\[SANITY:\s*[+-]?\d+\]/g, '')
+            .replace(/\[SUPPLIES:\s*[+-]?\d+\]/g, '')
+            .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
+            .replace(/\[OPTIONS:\s*.+?\]/gs, '')
+            .trim();
+    };
+
     const handleCommand = async (cmd) => {
         if (loading) return;
         const userCmd = cmd || input;
@@ -383,16 +401,17 @@ export default function SurvivalGame() {
             setStreamingContent("");
             pendingContent.current = '';
 
-            // 节流更新函数 - 每 50ms 最多更新一次 UI
+            // 节流更新函数 - 每 50ms 最多更新一次 UI，同时清理标签
             const throttledUpdate = (content) => {
                 pendingContent.current = content;
+                const cleanContent = cleanTagsForDisplay(content);
                 const now = Date.now();
                 if (now - lastUpdateTime.current >= 50) {
-                    setStreamingContent(content);
+                    setStreamingContent(cleanContent);
                     lastUpdateTime.current = now;
                 } else if (!rafId.current) {
                     rafId.current = requestAnimationFrame(() => {
-                        setStreamingContent(pendingContent.current);
+                        setStreamingContent(cleanTagsForDisplay(pendingContent.current));
                         lastUpdateTime.current = Date.now();
                         rafId.current = null;
                     });
