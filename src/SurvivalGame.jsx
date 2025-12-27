@@ -105,11 +105,17 @@ const IceBorder = ({ children, className = "" }) => (
     </div>
 );
 
-const StatBar = ({ icon: Icon, label, value, color = "bg-cyan-500", max = 100, hideOnMobile = false }) => (
-    <div className={`flex items-center gap-1 md:gap-3 ${hideOnMobile ? 'hidden md:flex' : ''}`}>
+const StatBar = ({ icon: Icon, label, value, color = "bg-cyan-500", max = 100 }) => (
+    <div className="flex items-center gap-1 md:gap-3 shrink-0">
         <div className="p-1 md:p-2 rounded-full bg-slate-800 border border-slate-700">
             {React.createElement(Icon, { size: 14, className: "md:w-4 md:h-4 text-slate-400" })}
         </div>
+        {/* 移动端: 显示标签和数值 */}
+        <div className="md:hidden flex items-center gap-0.5">
+            <span className="text-xs text-slate-400 font-sans">{label}</span>
+            <span className="text-xs text-slate-300 font-sans font-medium">{value}</span>
+        </div>
+        {/* 桌面端: 显示完整标签和进度条 */}
         <div className="hidden md:flex flex-1 flex-col max-w-[100px]">
             <div className="flex justify-between text-xs text-slate-400 mb-1 font-sans">
                 <span>{label}</span>
@@ -122,7 +128,6 @@ const StatBar = ({ icon: Icon, label, value, color = "bg-cyan-500", max = 100, h
                 />
             </div>
         </div>
-        <span className="md:hidden text-xs text-slate-400 font-sans min-w-[28px]">{value}</span>
     </div>
 );
 
@@ -505,24 +510,28 @@ export default function SurvivalGame() {
             <div className="container mx-auto px-2 md:px-4 py-4 md:py-8 h-screen flex items-center justify-center relative z-20">
                 <IceBorder className="w-full max-w-4xl h-[95vh] md:h-[90vh]">
 
-                    {/* Header */}
-                    <div className="flex justify-between items-center mb-3 md:mb-6 border-b border-slate-700 pb-3 md:pb-4 shrink-0">
-                        <div className="flex gap-1 md:gap-4 items-center">
-                            <StatBar icon={Heart} label="生命" value={stats.hp} color="bg-rose-500" />
-                            <StatBar icon={Thermometer} label="体温" value={stats.warmth} color="bg-orange-400" />
-                            <StatBar icon={Utensils} label="饱腹" value={100 - stats.hunger} color="bg-emerald-400" hideOnMobile />
-                            <StatBar icon={Brain} label="理智" value={stats.sanity} color="bg-purple-400" hideOnMobile />
-                            <div className="flex items-center gap-1 text-amber-400 ml-2">
-                                <Package size={16} />
-                                <span className="text-sm font-bold">{stats.supplies}</span>
+                    {/* Header - 移动端两行布局 */}
+                    <div className="flex flex-col gap-2 mb-3 md:mb-6 border-b border-slate-700 pb-3 md:pb-4 shrink-0">
+                        {/* 第一行：状态栏 + 进度 */}
+                        <div className="flex items-center justify-between gap-2">
+                            {/* 状态栏 - 移动端可水平滚动 */}
+                            <div className="flex gap-2 md:gap-4 items-center flex-1 min-w-0 overflow-x-auto custom-scrollbar pb-1">
+                                <StatBar icon={Heart} label="生命" value={stats.hp} color="bg-rose-500" />
+                                <StatBar icon={Thermometer} label="体温" value={stats.warmth} color="bg-orange-400" />
+                                <StatBar icon={Utensils} label="饱腹" value={100 - stats.hunger} color="bg-emerald-400" />
+                                <StatBar icon={Brain} label="理智" value={stats.sanity} color="bg-purple-400" />
+                                <div className="flex items-center gap-1 text-amber-400 shrink-0">
+                                    <Package size={14} />
+                                    <span className="text-xs font-bold">{stats.supplies}</span>
+                                </div>
                             </div>
-                            {/* 章节和进度显示 */}
-                            <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1 bg-slate-800/80 rounded-full border border-slate-700">
-                                <BookOpen size={14} className="text-cyan-400" />
-                                <span className="text-xs text-slate-300">
+                            {/* 章节和进度显示 - 移动端简化 */}
+                            <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 bg-slate-800/80 rounded-full border border-slate-700 shrink-0 ml-2">
+                                <BookOpen size={12} className="text-cyan-400" />
+                                <span className="hidden md:inline text-xs text-slate-300">
                                     {CHAPTERS[currentChapter]?.title || '序章'}
                                 </span>
-                                <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                <div className="w-8 md:w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-cyan-500 transition-all duration-500"
                                         style={{ width: `${plotProgress}%` }}
@@ -532,22 +541,23 @@ export default function SurvivalGame() {
                             </div>
                         </div>
 
-                        <div className="flex gap-1 md:gap-2 ml-0 md:ml-4 items-center flex-wrap justify-end w-full md:w-auto">
+                        {/* 第二行：工具栏 */}
+                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar pb-1">
                             {currentUser ? (
                                 <>
-                                    <span className="text-xs text-slate-500 hidden md:inline">{currentUser.username}</span>
-                                    <button onClick={() => openSaveModal('save')} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><Save size={18} /></button>
-                                    <button onClick={() => openSaveModal('load')} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><RotateCcw size={18} /></button>
-                                    <button onClick={() => { logout(); setCurrentUser(null); }} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><LogOut size={18} /></button>
+                                    <span className="text-xs text-slate-500 hidden md:inline mr-1 shrink-0">{currentUser.username}</span>
+                                    <button onClick={() => openSaveModal('save')} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><Save size={16} /></button>
+                                    <button onClick={() => openSaveModal('load')} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><RotateCcw size={16} /></button>
+                                    <button onClick={() => { logout(); setCurrentUser(null); }} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><LogOut size={16} /></button>
                                 </>
                             ) : (
-                                <button onClick={() => setShowAuthModal(true)} className="px-3 py-1.5 bg-cyan-900 text-cyan-100 rounded-sm text-xs hover:bg-cyan-800 flex items-center gap-1"><User size={14} /> 登录</button>
+                                <button onClick={() => setShowAuthModal(true)} className="px-2 py-1 bg-cyan-900 text-cyan-100 rounded-sm text-xs hover:bg-cyan-800 flex items-center gap-1 shrink-0"><User size={14} /> <span className="hidden sm:inline">登录</span></button>
                             )}
-                            <button onClick={() => setShowProfile(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="人物档案"><BookOpen size={18} /></button>
-                            <button onClick={() => setShowGallery(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="CG画廊"><ImageIcon size={18} /></button>
-                            <button onClick={() => setShowHistoryModal(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="对话历史"><History size={18} /></button>
-                            <button onClick={() => setShowGameSettingsModal(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="游戏设置"><Sliders size={18} /></button>
-                            <button onClick={() => setShowSettingsModal(true)} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="API设置"><Settings size={18} /></button>
+                            <button onClick={() => setShowProfile(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="人物档案"><BookOpen size={16} /></button>
+                            <button onClick={() => setShowGallery(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="CG画廊"><ImageIcon size={16} /></button>
+                            <button onClick={() => setShowHistoryModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="对话历史"><History size={16} /></button>
+                            <button onClick={() => setShowGameSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="游戏设置"><Sliders size={16} /></button>
+                            <button onClick={() => setShowSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="API设置"><Settings size={16} /></button>
                         </div>
                     </div>
 

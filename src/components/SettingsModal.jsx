@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, X, Key, Globe, Cpu, Check, AlertCircle, Brain } from 'lucide-react';
+import { Settings, X, Key, Globe, Cpu, Check, AlertCircle } from 'lucide-react';
 import { getApiSettings, saveApiSettings, MODEL_PRESETS, isApiConfigured } from '../services/apiSettings';
 
 /**
@@ -20,7 +20,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     const [preset, setPreset] = useState(initialPreset);
     const [saved, setSaved] = useState(false);
     const [showKey, setShowKey] = useState(false);
-    const [enableThinking, setEnableThinking] = useState(initialSettings.enableThinking || false);
+
 
     if (!isOpen) return null;
 
@@ -34,7 +34,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     };
 
     const handleSave = () => {
-        saveApiSettings({ apiKey, baseUrl, model, enableThinking });
+        saveApiSettings({ apiKey, baseUrl, model });
         setSaved(true);
         setTimeout(() => {
             setSaved(false);
@@ -159,27 +159,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                         />
                     </div>
 
-                    {/* 思考模式开关 */}
-                    <div className="mb-6 p-4 bg-stone-100 rounded-sm border border-stone-200">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Brain size={18} className="text-stone-600" />
-                                <div>
-                                    <span className="text-sm text-stone-700 font-serif">深度思考模式</span>
-                                    <p className="text-xs text-stone-500 mt-0.5">开启后模型会先进行思考再回复，适用于 DeepSeek 等支持的模型</p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setEnableThinking(!enableThinking)}
-                                className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${enableThinking ? 'bg-stone-800' : 'bg-stone-300'}`}
-                            >
-                                <span
-                                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${enableThinking ? 'left-7' : 'left-1'}`}
-                                />
-                            </button>
-                        </div>
-                    </div>
+
 
                     {/* 保存按钮 */}
                     <button

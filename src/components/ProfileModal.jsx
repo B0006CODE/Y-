@@ -54,7 +54,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 md:p-4 modal-container">
-            <div className="bg-stone-50 w-full max-w-5xl rounded-sm shadow-2xl border border-stone-200 flex flex-col md:flex-row h-[95vh] md:h-[80vh] overflow-hidden">
+            <div className="bg-stone-50 w-full max-w-5xl rounded-sm shadow-2xl border border-stone-200 flex flex-col md:flex-row h-[95vh] md:h-[80vh] overflow-hidden min-h-0">
 
                 {/* Sidebar - Mobile: horizontal scroll at top, Desktop: vertical sidebar */}
                 <div className="w-full md:w-64 bg-stone-100 border-b md:border-b-0 md:border-r border-stone-200 flex flex-col shrink-0">
@@ -85,10 +85,50 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="font-serif text-sm truncate">{CHARACTERS.heroine.name}</div>
-                                <div className="text-xs opacity-70 truncate">我的状态</div>
+                                <div className="text-xs opacity-70 hidden md:block truncate">我的状态</div>
                             </div>
                         </button>
 
+                        {/* Mobile: show all characters inline for horizontal scrolling */}
+                        {allCharacters.filter(c => c.type === 'protagonist').map(char => (
+                            <button
+                                key={char.id}
+                                onClick={() => setSelectedCharId(char.id)}
+                                className={`md:hidden shrink-0 text-left p-2 rounded-sm flex items-center gap-2 transition-colors ${resolvedCharId === char.id ? 'bg-stone-800 text-stone-50 shadow-md' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
+                                    }`}
+                            >
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
+                                    <img src={char.avatar} alt={char.name} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-serif text-sm truncate">{char.name}</div>
+                                </div>
+                                {detailedAffinity[char.id] > 0 && (
+                                    <div className="text-xs font-serif text-rose-400 flex items-center gap-0.5">
+                                        <Heart size={10} fill="currentColor" />
+                                        {detailedAffinity[char.id]}
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+
+                        {allCharacters.filter(c => c.type === 'supporting').map(char => (
+                            <button
+                                key={char.id}
+                                onClick={() => setSelectedCharId(char.id)}
+                                className={`md:hidden shrink-0 text-left p-2 rounded-sm flex items-center gap-2 transition-colors ${resolvedCharId === char.id ? 'bg-stone-700 text-stone-50 shadow-md' : 'bg-stone-300 text-stone-700 hover:bg-stone-400'
+                                    }`}
+                            >
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
+                                    <img src={char.avatar} alt={char.name} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-serif text-sm truncate">{char.name}</div>
+                                </div>
+                            </button>
+                        ))}
+
+                        {/* Desktop: show grouped sections */}
                         <div className="hidden md:block mb-4">
                             <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">可攻略角色</h3>
                             {allCharacters.filter(c => c.type === 'protagonist').map(char => (
@@ -138,7 +178,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                 </div>
 
                 {/* Main Content - Character Detail */}
-                <div className={`flex-1 flex flex-col relative bg-cover bg-center ${gameMode === 'survival' ? "bg-[url('/bg_shelter.png')]" : "bg-[url('/bg_banquet.png')]"}`}>
+                <div className={`flex-1 flex flex-col relative bg-cover bg-center min-h-0 ${gameMode === 'survival' ? "bg-[url('/bg_shelter.png')]" : "bg-[url('/bg_banquet.png')]"}`}>
                     <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
 
                     <button
@@ -149,7 +189,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                     </button>
 
                     {selectedChar && (
-                        <div className="relative z-0 flex-1 flex flex-col md:flex-row p-8 gap-8 overflow-y-auto custom-scrollbar">
+                        <div className="relative z-0 flex-1 flex flex-col md:flex-row p-8 gap-8 overflow-y-auto custom-scrollbar min-h-0">
                             {/* Left: Portrait */}
                             <div className="w-full md:w-1/3 flex flex-col items-center">
                                 <div className="w-full aspect-[3/4] rounded-sm overflow-hidden border-4 border-stone-200 shadow-xl bg-stone-100 mb-6 relative group">

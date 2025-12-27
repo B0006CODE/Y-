@@ -129,11 +129,16 @@ const LatticeBorder = ({ children, className = "" }) => (
     </div>
 );
 
-const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800", hideOnMobile = false }) => (
-    <div className={`flex items-center gap-1 md:gap-3 ${hideOnMobile ? 'hidden md:flex' : ''}`}>
-        {/* 移动端紧凑布局: 只显示图标和数值 */}
+const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800" }) => (
+    <div className="flex items-center gap-1 md:gap-3 shrink-0">
+        {/* 移动端紧凑布局: 图标 + 标签 + 数值 */}
         <div className="p-1 md:p-2 rounded-full bg-stone-100 border border-stone-200">
             {React.createElement(Icon, { size: 14, className: "md:w-4 md:h-4 text-stone-600" })}
+        </div>
+        {/* 移动端: 显示标签和数值 */}
+        <div className="md:hidden flex items-center gap-0.5">
+            <span className="text-xs text-stone-500 font-serif">{label}</span>
+            <span className="text-xs text-stone-700 font-serif font-medium">{value}%</span>
         </div>
         {/* 桌面端: 显示完整标签和进度条 */}
         <div className="hidden md:flex flex-1 flex-col max-w-[100px]">
@@ -148,8 +153,6 @@ const StatBar = ({ icon: Icon, label, value, color = "bg-stone-800", hideOnMobil
                 />
             </div>
         </div>
-        {/* 移动端: 只显示数值 */}
-        <span className="md:hidden text-xs text-stone-600 font-serif min-w-[28px]">{value}%</span>
     </div>
 );
 
@@ -590,20 +593,23 @@ export default function AncientLoveGame() {
                 <LatticeBorder className="w-full max-w-4xl h-[95vh] md:h-[90vh]">
 
                     {/* Header / Stats - 移动端简化显示 */}
-                    <div className="flex justify-between items-center mb-3 md:mb-6 border-b border-stone-200 pb-3 md:pb-4 shrink-0">
-                        {/* 状态栏 - 移动端只显示图标+数值 */}
-                        <div className="flex gap-1 md:gap-4 items-center">
-                            <StatBar icon={Heart} label="好感" value={stats.affinity} color="bg-rose-400" />
-                            <StatBar icon={Shield} label="信任" value={stats.trust} color="bg-emerald-400" />
-                            <StatBar icon={Crown} label="权势" value={stats.power} color="bg-amber-400" hideOnMobile />
-                            <StatBar icon={AlertTriangle} label="风险" value={stats.risk} color="bg-stone-800" hideOnMobile />
-                            {/* 章节和进度显示 */}
-                            <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1 bg-stone-100 rounded-full border border-stone-200">
-                                <Scroll size={14} className="text-amber-600" />
-                                <span className="text-xs text-stone-600 font-serif">
+                    <div className="flex flex-col gap-2 mb-3 md:mb-6 border-b border-stone-200 pb-3 md:pb-4 shrink-0">
+                        {/* 第一行：状态栏 + 进度 */}
+                        <div className="flex items-center justify-between gap-2">
+                            {/* 状态栏 - 移动端可水平滚动 */}
+                            <div className="flex gap-2 md:gap-4 items-center flex-1 min-w-0 overflow-x-auto custom-scrollbar pb-1">
+                                <StatBar icon={Heart} label="好感" value={stats.affinity} color="bg-rose-400" />
+                                <StatBar icon={Shield} label="信任" value={stats.trust} color="bg-emerald-400" />
+                                <StatBar icon={Crown} label="权势" value={stats.power} color="bg-amber-400" />
+                                <StatBar icon={AlertTriangle} label="风险" value={stats.risk} color="bg-stone-800" />
+                            </div>
+                            {/* 章节和进度显示 - 移动端简化 */}
+                            <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 bg-stone-100 rounded-full border border-stone-200 shrink-0 ml-2">
+                                <Scroll size={12} className="text-amber-600" />
+                                <span className="hidden md:inline text-xs text-stone-600 font-serif">
                                     {CHAPTERS[currentChapter]?.title || '序章'}
                                 </span>
-                                <div className="w-16 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                                <div className="w-8 md:w-16 h-1.5 bg-stone-200 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-amber-500 transition-all duration-500"
                                         style={{ width: `${plotProgress}%` }}
@@ -612,31 +618,31 @@ export default function AncientLoveGame() {
                                 <span className="text-xs text-stone-500">{plotProgress}%</span>
                             </div>
                         </div>
-                        {/* 工具栏 - 移动端自动换行 */}
-                        <div className="flex gap-1 md:gap-2 ml-0 md:ml-4 items-center flex-wrap justify-end w-full md:w-auto">
+                        {/* 第二行：工具栏 */}
+                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar pb-1">
                             {/* 用户状态 */}
                             {currentUser ? (
                                 <>
-                                    <span className="text-xs text-stone-500 font-serif hidden md:inline">
+                                    <span className="text-xs text-stone-500 font-serif hidden md:inline shrink-0">
                                         {currentUser.username}
                                     </span>
                                     <button
                                         onClick={() => openSaveModal('save')}
-                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
                                         title="存档"
                                     >
                                         <Save size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                     <button
                                         onClick={() => openSaveModal('load')}
-                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
                                         title="读档"
                                     >
                                         <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
                                     </button>
                                     <button
                                         onClick={() => { logout(); setCurrentUser(null); }}
-                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                         title="退出登录"
                                     >
                                         <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
@@ -645,7 +651,7 @@ export default function AncientLoveGame() {
                             ) : (
                                 <button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="px-2 py-1 md:px-3 md:py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1"
+                                    className="px-2 py-1 md:px-3 md:py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1 shrink-0"
                                 >
                                     <User size={14} />
                                     <span className="hidden sm:inline">登录</span>
@@ -653,22 +659,21 @@ export default function AncientLoveGame() {
                             )}
                             <button
                                 onClick={() => setShowProfile(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                 title="人物志"
                             >
                                 <BookOpen size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             <button
                                 onClick={() => setShowGallery(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                 title="珍藏画卷"
                             >
                                 <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
-                            {/* API设置按钮 */}
                             <button
                                 onClick={() => setShowSettingsModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                 title="API 设置"
                             >
                                 <Settings size={16} className="md:w-[18px] md:h-[18px]" />
@@ -676,7 +681,7 @@ export default function AncientLoveGame() {
                             {/* 游戏设置按钮 */}
                             <button
                                 onClick={() => setShowGameSettingsModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                 title="游戏设置"
                             >
                                 <Gamepad2 size={16} className="md:w-[18px] md:h-[18px]" />
@@ -684,7 +689,7 @@ export default function AncientLoveGame() {
                             {/* 历史记录按钮 */}
                             <button
                                 onClick={() => setShowHistoryModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target"
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
                                 title="对话回顾"
                             >
                                 <History size={16} className="md:w-[18px] md:h-[18px]" />

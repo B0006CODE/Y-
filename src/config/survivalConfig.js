@@ -63,21 +63,21 @@ export const CHARACTERS = {
             title: '所长',
             background: '气象研究所所长，女主的导师。在灾难初期失联，留下了关键数据硬盘。',
             speakingStyle: '严肃学术，语重心长',
-            avatar: '/char_doctor.png' // 临时使用医生立绘作为占位符
+            avatar: '/char_director.png'
         },
         xiaoLin: {
             name: '小林',
             title: '护士',
             background: '沈北辰的助手，活泼开朗的实习护士。',
             speakingStyle: '快人快语，充满活力',
-            avatar: '/char_teacher.png' // 临时使用老师立绘作为占位符
+            avatar: '/char_nurse.png'
         },
         uncleWang: {
             name: '王大爷',
             title: '维修工',
             background: '避难所的维修师傅，什么都能修。',
             speakingStyle: '朴实憨厚，嗓门大',
-            avatar: '/char_captain.png' // 临时使用队长立绘作为占位符
+            avatar: '/char_worker.png'
         }
     },
 
@@ -342,9 +342,9 @@ export const CHARACTER_NAME_MAP = {
     '陆少': '/char_rich.png',
 
     // 配角 (使用主角立绘作为临时占位符)
-    '张所长': '/char_doctor.png',
-    '小林': '/char_teacher.png',
-    '王大爷': '/char_captain.png',
+    '张所长': '/char_director.png',
+    '小林': '/char_nurse.png',
+    '王大爷': '/char_worker.png',
 
     // 女主
     '林暮雪': '/char_heroine_survival.png',
