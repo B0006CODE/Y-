@@ -166,7 +166,7 @@ const ChatMessage = ({ role, content }) => {
     let displayContent = content;
 
     if (!isUser) {
-        const match = content.match(/^\s*(?:\[(.*?)\]|([^\[\]:]+)):\s*(.*)/s);
+        const match = content.match(/^\s*(?:\[(.*?)\]|([^[\]:]+)):\s*(.*)/s);
         if (match) {
             speaker = (match[1] || match[2]).trim();
             displayContent = match[3];

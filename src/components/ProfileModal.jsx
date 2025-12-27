@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { X, User, Heart, Shield, Star, BookOpen, MapPin } from 'lucide-react';
 import * as StoryConfig from '../config/storyConfig';
 import * as SurvivalConfig from '../config/survivalConfig';
@@ -9,27 +9,47 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
     const { CHARACTERS, CHAPTERS } = config;
     const [selectedCharId, setSelectedCharId] = useState('heroine');
 
+    // Combine all characters into one list for the sidebar
+    const allCharacters = useMemo(() => ([
+        ...Object.entries(CHARACTERS?.protagonists || {}).map(([id, char]) => ({ id, ...char, type: 'protagonist' })),
+        ...Object.entries(CHARACTERS?.supporting || {}).map(([id, char]) => ({ id, ...char, type: 'supporting' }))
+    ]), [CHARACTERS]);
+
+    const resolvedCharId = useMemo(() => {
+        if (selectedCharId === 'heroine') return 'heroine';
+        const exists = allCharacters.some((char) => char.id === selectedCharId);
+        return exists ? selectedCharId : 'heroine';
+    }, [allCharacters, selectedCharId]);
+
     if (!isOpen) return null;
 
-    // Combine all characters into one list for the sidebar
-    const allCharacters = [
-        ...Object.entries(CHARACTERS.protagonists).map(([id, char]) => ({ id, ...char, type: 'protagonist' })),
-        ...Object.entries(CHARACTERS.supporting).map(([id, char]) => ({ id, ...char, type: 'supporting' }))
-    ];
+    if (!CHARACTERS?.heroine || !CHAPTERS) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 md:p-4 modal-container">
+                <div className="bg-stone-50 w-full max-w-lg rounded-sm shadow-2xl border border-stone-200 p-6 text-center">
+                    <p className="font-serif text-stone-700">人物数据暂时不可用，请稍后再试。</p>
+                </div>
+            </div>
+        );
+    }
 
     const getCharacterData = () => {
-        if (selectedCharId === 'heroine') {
+        if (resolvedCharId === 'heroine' || !resolvedCharId) {
             return {
                 ...CHARACTERS.heroine,
                 type: 'heroine',
                 id: 'heroine'
             };
         }
-        return allCharacters.find(c => c.id === selectedCharId);
+        return allCharacters.find(c => c.id === resolvedCharId) || {
+            ...CHARACTERS.heroine,
+            type: 'heroine',
+            id: 'heroine'
+        };
     };
 
     const selectedChar = getCharacterData();
-    const affinity = detailedAffinity[selectedCharId] || 0;
+    const affinity = detailedAffinity[resolvedCharId] || 0;
     const chapterInfo = CHAPTERS[currentChapter];
 
     return (
@@ -57,7 +77,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                         {/* Heroine / My Status */}
                         <button
                             onClick={() => setSelectedCharId('heroine')}
-                            className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-4 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === 'heroine' ? 'bg-stone-800 text-stone-50 shadow-md' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
+                            className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-4 flex items-center gap-2 md:gap-3 transition-colors ${resolvedCharId === 'heroine' ? 'bg-stone-800 text-stone-50 shadow-md' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
                                 }`}
                         >
                             <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
@@ -75,7 +95,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                                 <button
                                     key={char.id}
                                     onClick={() => setSelectedCharId(char.id)}
-                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-800 text-stone-50 shadow-md' : 'hover:bg-stone-200 text-stone-700'
+                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${resolvedCharId === char.id ? 'bg-stone-800 text-stone-50 shadow-md' : 'hover:bg-stone-200 text-stone-700'
                                         }`}
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
@@ -101,7 +121,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
                                 <button
                                     key={char.id}
                                     onClick={() => setSelectedCharId(char.id)}
-                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${selectedCharId === char.id ? 'bg-stone-200 text-stone-800' : 'hover:bg-stone-200 text-stone-600'
+                                    className={`shrink-0 md:w-full text-left p-2 md:p-3 rounded-sm mb-0 md:mb-1 flex items-center gap-2 md:gap-3 transition-colors ${resolvedCharId === char.id ? 'bg-stone-200 text-stone-800' : 'hover:bg-stone-200 text-stone-600'
                                         }`}
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-300 shrink-0">
@@ -226,7 +246,7 @@ const ProfileModal = ({ isOpen, onClose, detailedAffinity = {}, currentChapter =
 const InfoCard = ({ icon, title, content }) => (
     <div className="bg-white/60 p-4 rounded-sm border border-stone-200/50 hover:bg-white/80 transition-colors">
         <div className="flex items-center gap-2 mb-2 text-stone-500 font-serif text-sm">
-            {icon ? icon({ size: 14 }) : null}
+            {icon ? React.createElement(icon, { size: 14 }) : null}
             <span>{title}</span>
         </div>
         <p className="text-stone-800 font-serif leading-relaxed">

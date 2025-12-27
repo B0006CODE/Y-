@@ -51,7 +51,7 @@ const HistoryModal = ({ isOpen, onClose, history, gameMode = 'story' }) => {
             };
         }
 
-        const match = cleanContent.match(/^\s*(?:\[(.*?)\]|([^\[\]:]+)):\s*(.*)/s);
+        const match = cleanContent.match(/^\s*(?:\[(.*?)\]|([^[\]:]+)):\s*(.*)/s);
         if (match) {
             const speaker = (match[1] || match[2]).trim();
             const text = match[3];

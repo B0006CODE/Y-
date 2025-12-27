@@ -25,15 +25,15 @@ const DEFAULT_SETTINGS = {
 
 // 支持的模型预设
 export const MODEL_PRESETS = {
-    'qwen-plus': {
-        name: '通义千问 Plus',
-        baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        model: 'qwen-plus'
+    'deepseek': {
+        name: 'deepseek',
+        baseUrl: 'https://api.deepseek.com',
+        model: 'deepseek-chat'
     },
     'qwen-turbo': {
-        name: '通义千问 Turbo',
-        baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        model: 'qwen-turbo'
+        name: 'gemini',
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+        model: 'gemini-2.5-flash'
     },
     'qwen-max': {
         name: '通义千问 Max',
@@ -43,7 +43,7 @@ export const MODEL_PRESETS = {
     'openai': {
         name: 'OpenAI GPT',
         baseUrl: 'https://api.openai.com/v1',
-        model: 'gpt-3.5-turbo'
+        model: 'gpt-4o-mini'
     },
     'custom': {
         name: '自定义',
