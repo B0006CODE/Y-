@@ -4,7 +4,7 @@
  */
 
 const API_SETTINGS_KEY = 'ancient_love_api_settings';
-const PROXY_BASE_URL = import.meta.env.VITE_LLM_BASE_URL;
+export const PROXY_BASE_URL = import.meta.env.VITE_LLM_BASE_URL;
 
 const safeParse = (value, fallback) => {
     if (!value) return fallback;

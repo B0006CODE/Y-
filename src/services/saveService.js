@@ -19,6 +19,25 @@ const safeParse = (value, fallback) => {
     }
 };
 
+const stripTagsForPreview = (content) => {
+    return String(content || '')
+        .replace(/\[SCENE:\s*\w+\]/g, '')
+        .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
+        .replace(/\[UNLOCK_CG:\s*\w+\]/g, '')
+        .replace(/\[CHAPTER:\s*\w+\]/g, '')
+        .replace(/\[TRUST:\s*[+-]?\d+\]/g, '')
+        .replace(/\[POWER:\s*[+-]?\d+\]/g, '')
+        .replace(/\[RISK:\s*[+-]?\d+\]/g, '')
+        .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
+        .replace(/\[OPTIONS:\s*.+?\]/gs, '')
+        .replace(/\[HP:\s*[+-]?\d+\]/g, '')
+        .replace(/\[WARMTH:\s*[+-]?\d+\]/g, '')
+        .replace(/\[HUNGER:\s*[+-]?\d+\]/g, '')
+        .replace(/\[SANITY:\s*[+-]?\d+\]/g, '')
+        .replace(/\[SUPPLIES:\s*[+-]?\d+\]/g, '')
+        .trim();
+};
+
 const getAuthHeaders = () => {
     const token = getAuthToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -98,7 +117,7 @@ export const saveGame = async (userId, slot, gameState, gameMode = 'story') => {
 
     // 生成存档预览信息
     const lastMessage = gameState.history?.length > 0
-        ? gameState.history[gameState.history.length - 1]?.content?.substring(0, 50) + '...'
+        ? `${stripTagsForPreview(gameState.history[gameState.history.length - 1]?.content).substring(0, 50)}...`
         : '新游戏';
 
     // 根据游戏模式设置默认场景

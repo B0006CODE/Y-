@@ -21,25 +21,45 @@ const HistoryModal = ({ isOpen, onClose, history, gameMode = 'story' }) => {
 
     if (!isOpen) return null;
 
+    const cleanTagsForDisplay = (content) => {
+        return content
+            .replace(/\[SCENE:\s*\w+\]/g, '')
+            .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
+            .replace(/\[UNLOCK_CG:\s*\w+\]/g, '')
+            .replace(/\[CHAPTER:\s*\w+\]/g, '')
+            .replace(/\[TRUST:\s*[+-]?\d+\]/g, '')
+            .replace(/\[POWER:\s*[+-]?\d+\]/g, '')
+            .replace(/\[RISK:\s*[+-]?\d+\]/g, '')
+            .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
+            .replace(/\[OPTIONS:\s*.+?\]/gs, '')
+            .replace(/\[HP:\s*[+-]?\d+\]/g, '')
+            .replace(/\[WARMTH:\s*[+-]?\d+\]/g, '')
+            .replace(/\[HUNGER:\s*[+-]?\d+\]/g, '')
+            .replace(/\[SANITY:\s*[+-]?\d+\]/g, '')
+            .replace(/\[SUPPLIES:\s*[+-]?\d+\]/g, '')
+            .trim();
+    };
+
     // 解析消息内容获取说话者
     const parseMessage = (content, isUser) => {
+        const cleanContent = cleanTagsForDisplay(content);
         if (isUser) {
             return {
                 speaker: '我',
-                text: content,
+                text: cleanContent,
                 avatar: CHARACTERS.heroine.avatar
             };
         }
 
-        const match = content.match(/^\[(.*?)\]:\s*(.*)/s);
+        const match = cleanContent.match(/^\s*(?:\[(.*?)\]|([^\[\]:]+)):\s*(.*)/s);
         if (match) {
-            const speaker = match[1];
-            const text = match[2];
+            const speaker = (match[1] || match[2]).trim();
+            const text = match[3];
             const avatar = CHARACTER_NAME_MAP[speaker] || null;
             return { speaker, text, avatar };
         }
 
-        return { speaker: '旁白', text: content, avatar: null };
+        return { speaker: '旁白', text: cleanContent, avatar: null };
     };
 
     return (

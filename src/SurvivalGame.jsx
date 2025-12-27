@@ -136,10 +136,10 @@ const ChatMessage = ({ role, content }) => {
     let displayContent = content;
 
     if (!isUser) {
-        const match = content.match(/^\[(.*?)\]:\s*(.*)/s);
+        const match = content.match(/^\s*(?:\[(.*?)\]|([^\[\]:]+)):\s*(.*)/s);
         if (match) {
-            speaker = match[1];
-            displayContent = match[2];
+            speaker = (match[1] || match[2]).trim();
+            displayContent = match[3];
         }
     } else {
         speaker = CHARACTERS.heroine.name;
@@ -444,8 +444,8 @@ export default function SurvivalGame() {
                 rafId.current = null;
             }
 
-            const finalContent = parseResponse(result.content);
-            setHistory(prev => [...prev, { role: 'assistant', content: finalContent }]);
+            parseResponse(result.content);
+            setHistory(prev => [...prev, { role: 'assistant', content: result.content }]);
             setStreamingContent("");
         } catch (error) {
             console.error("Game Error:", error);
@@ -553,9 +553,12 @@ export default function SurvivalGame() {
 
                     {/* Chat Area */}
                     <div className={`flex-1 overflow-y-auto pr-4 custom-scrollbar mb-4 ${getFontSizeClass(gameSettings.fontSize)}`} ref={scrollRef}>
-                        {history.map((msg, idx) => (
-                            <ChatMessage key={idx} role={msg.role} content={msg.content} />
-                        ))}
+                        {history.map((msg, idx) => {
+                            const displayContent = msg.role === 'assistant'
+                                ? cleanTagsForDisplay(msg.content)
+                                : msg.content;
+                            return <ChatMessage key={idx} role={msg.role} content={displayContent} />;
+                        })}
                         {loading && streamingContent && (
                             <ChatMessage role="assistant" content={streamingContent} />
                         )}

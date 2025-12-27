@@ -84,6 +84,25 @@ const safeParse = (value, fallback) => {
     }
 };
 
+const stripTagsForPreview = (content) => {
+    return String(content || '')
+        .replace(/\[SCENE:\s*\w+\]/g, '')
+        .replace(/\[AFFINITY:\s*\w+:?\s*[+-]?\d+\]/g, '')
+        .replace(/\[UNLOCK_CG:\s*\w+\]/g, '')
+        .replace(/\[CHAPTER:\s*\w+\]/g, '')
+        .replace(/\[TRUST:\s*[+-]?\d+\]/g, '')
+        .replace(/\[POWER:\s*[+-]?\d+\]/g, '')
+        .replace(/\[RISK:\s*[+-]?\d+\]/g, '')
+        .replace(/\[PROGRESS:\s*[+-]?\d+\]/g, '')
+        .replace(/\[OPTIONS:\s*.+?\]/gs, '')
+        .replace(/\[HP:\s*[+-]?\d+\]/g, '')
+        .replace(/\[WARMTH:\s*[+-]?\d+\]/g, '')
+        .replace(/\[HUNGER:\s*[+-]?\d+\]/g, '')
+        .replace(/\[SANITY:\s*[+-]?\d+\]/g, '')
+        .replace(/\[SUPPLIES:\s*[+-]?\d+\]/g, '')
+        .trim();
+};
+
 const normalizeMode = (value) => (value === 'survival' ? 'survival' : 'story');
 
 const createToken = (user) => {
@@ -92,7 +111,12 @@ const createToken = (user) => {
 
 const requireAuth = (req, res, next) => {
     const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const userTokenHeader = typeof req.headers['x-user-token'] === 'string' ? req.headers['x-user-token'] : '';
+    const resolveToken = (value) => {
+        if (!value) return null;
+        return value.startsWith('Bearer ') ? value.slice(7) : value;
+    };
+    const token = resolveToken(userTokenHeader) || resolveToken(authHeader);
     if (!token) {
         return res.status(401).json({ success: false, message: '请先登录' });
     }
@@ -231,9 +255,8 @@ app.post('/api/saves/:slot', requireAuth, (req, res) => {
             return res.status(400).json({ success: false, message: '缺少游戏数据' });
         }
 
-        const lastMessage = gameState.history?.length
-            ? `${gameState.history[gameState.history.length - 1]?.content?.substring(0, 50) || ''}...`
-            : '新游戏';
+        const rawPreview = stripTagsForPreview(gameState.history?.[gameState.history.length - 1]?.content);
+        const lastMessage = rawPreview ? `${rawPreview.substring(0, 50)}...` : '新游戏';
         const savedAt = new Date();
         const statsJson = gameState.stats ? JSON.stringify(gameState.stats) : null;
         const defaultScene = gameMode === 'survival' ? 'snowfield' : 'banquet';

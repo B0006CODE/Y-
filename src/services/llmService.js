@@ -1,6 +1,7 @@
 import * as StoryConfig from '../config/storyConfig.js';
 import * as SurvivalConfig from '../config/survivalConfig.js';
-import { getApiSettings, isApiConfigured } from './apiSettings.js';
+import { getApiSettings, isApiConfigured, PROXY_BASE_URL } from './apiSettings.js';
+import { getAuthToken } from './authService.js';
 
 // ==================== Token 优化配置 ====================
 const TOKEN_OPTIMIZATION = {
@@ -209,6 +210,11 @@ ${recentChoices.slice(-5).map(c => `❌ ${c}`).join('\n')}`;
     return prompt;
 };
 
+const isProxyRequest = (baseUrl) => {
+    if (!PROXY_BASE_URL || !baseUrl) return false;
+    return baseUrl.startsWith(PROXY_BASE_URL);
+};
+
 export const generateGameResponse = async (history, userCommand, stats, onChunk, mode = 'story', options = {}) => {
     const { recentChoices = [], currentStage = 0, currentChapter = 'prologue' } = options;
     const config = mode === 'survival' ? SurvivalConfig : StoryConfig;
@@ -265,12 +271,21 @@ export const generateGameResponse = async (history, userCommand, stats, onChunk,
             requestBody.enable_thinking = true;
         }
 
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiSettings.apiKey}`
+        };
+
+        if (isProxyRequest(apiSettings.baseUrl)) {
+            const userToken = getAuthToken();
+            if (userToken) {
+                headers["X-User-Token"] = userToken;
+            }
+        }
+
         const response = await fetch(`${apiSettings.baseUrl}/chat/completions`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiSettings.apiKey}`
-            },
+            headers,
             body: JSON.stringify(requestBody)
         });
 

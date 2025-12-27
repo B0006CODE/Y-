@@ -236,7 +236,7 @@ export const OPENING_NARRATIVE = `[SCENE: snowfield]
 【提示】请选择你的行动：
 
 [OPTIONS: 呼救 | 坚持向前走 | 观察那个人影]
-[PROGRESS: +5]`;
+[PROGRESS: +0]`;
 
 // ==================== 系统提示词 ====================
 export const SYSTEM_PROMPT = `你是《冰封之心》这款极端天气末日生存乙女游戏的DM（地下城主）。

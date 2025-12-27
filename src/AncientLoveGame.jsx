@@ -166,10 +166,10 @@ const ChatMessage = ({ role, content }) => {
     let displayContent = content;
 
     if (!isUser) {
-        const match = content.match(/^\[(.*?)\]:\s*(.*)/s);
+        const match = content.match(/^\s*(?:\[(.*?)\]|([^\[\]:]+)):\s*(.*)/s);
         if (match) {
-            speaker = match[1];
-            displayContent = match[2];
+            speaker = (match[1] || match[2]).trim();
+            displayContent = match[3];
         }
     } else {
         // Check if user is speaking (usually "我" or "青鸾" or "沈晚棠")
@@ -282,6 +282,8 @@ export default function AncientLoveGame() {
     const pendingContent = useRef('');
     const rafId = useRef(null);
     const gameInitialized = useRef(false);
+    const statsRef = useRef(stats);
+    const affinityRef = useRef(detailedAffinity);
 
     // 检查登录状态
     useEffect(() => {
@@ -290,6 +292,14 @@ export default function AncientLoveGame() {
             setCurrentUser(user);
         }
     }, []);
+
+    useEffect(() => {
+        statsRef.current = stats;
+    }, [stats]);
+
+    useEffect(() => {
+        affinityRef.current = detailedAffinity;
+    }, [detailedAffinity]);
 
     // Auto-scroll
     useEffect(() => {
@@ -370,7 +380,7 @@ export default function AncientLoveGame() {
                 // 当进入终章时，触发结局计算
                 if (chapterId === 'finale') {
                     setTimeout(() => {
-                        const ending = calculateEnding(stats, detailedAffinity);
+                        const ending = calculateEnding(statsRef.current, affinityRef.current);
                         setCurrentEnding(ending);
                         setShowEndingModal(true);
                     }, 2000); // 延迟2秒显示结局，让玩家看完终章开场
@@ -432,7 +442,7 @@ export default function AncientLoveGame() {
         }
 
         return cleanContent.trim();
-    }, [stats, detailedAffinity]);
+    }, []);
 
     // 简化的标签清理函数（用于流式输出时实时隐藏标签）
     const cleanTagsForDisplay = useCallback((content) => {
@@ -515,9 +525,8 @@ export default function AncientLoveGame() {
             }
 
             // Parse tags from the final complete response
-            const finalContent = parseResponse(result.content);
-
-            setHistory(prev => [...prev, { role: 'assistant', content: finalContent }]);
+            parseResponse(result.content);
+            setHistory(prev => [...prev, { role: 'assistant', content: result.content }]);
             setStreamingContent(""); // Clear streaming buffer after done
         } catch (error) {
             console.error("Game Error:", error);
@@ -685,9 +694,12 @@ export default function AncientLoveGame() {
 
                     {/* Chat Area */}
                     <div className={`flex-1 overflow-y-auto pr-4 custom-scrollbar mb-4 ${getFontSizeClass(gameSettings.fontSize)}`} ref={scrollRef}>
-                        {history.map((msg, idx) => (
-                            <ChatMessage key={idx} role={msg.role} content={msg.content} />
-                        ))}
+                        {history.map((msg, idx) => {
+                            const displayContent = msg.role === 'assistant'
+                                ? cleanTagsForDisplay(msg.content)
+                                : msg.content;
+                            return <ChatMessage key={idx} role={msg.role} content={displayContent} />;
+                        })}
                         {loading && streamingContent && (
                             <ChatMessage role="assistant" content={streamingContent} />
                         )}
