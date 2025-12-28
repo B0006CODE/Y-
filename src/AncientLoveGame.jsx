@@ -629,10 +629,10 @@ export default function AncientLoveGame() {
                                         </span>
                                         <button
                                             onClick={() => { logout(); setCurrentUser(null); }}
-                                            className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                            className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                             title="退出登录"
                                         >
-                                            <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
+                                            <LogOut size={16} />
                                         </button>
                                     </>
                                 ) : (
@@ -646,40 +646,40 @@ export default function AncientLoveGame() {
                                 )}
                                 <button
                                     onClick={() => setShowProfile(true)}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                     title="人物志"
                                 >
-                                    <BookOpen size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <BookOpen size={16} />
                                 </button>
                                 <button
                                     onClick={() => setShowGallery(true)}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                     title="珍藏画卷"
                                 >
-                                    <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <ImageIcon size={16} />
                                 </button>
                                 <button
                                     onClick={() => setShowSettingsModal(true)}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                     title="API 设置"
                                 >
-                                    <Settings size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <Settings size={16} />
                                 </button>
                                 {/* 游戏设置按钮 */}
                                 <button
                                     onClick={() => setShowGameSettingsModal(true)}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                     title="游戏设置"
                                 >
-                                    <Gamepad2 size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <Gamepad2 size={16} />
                                 </button>
                                 {/* 历史记录按钮 */}
                                 <button
                                     onClick={() => setShowHistoryModal(true)}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 shrink-0"
                                     title="对话回顾"
                                 >
-                                    <History size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <History size={16} />
                                 </button>
                                 {/* 存档/读档按钮 */}
                                 <button
@@ -690,10 +690,10 @@ export default function AncientLoveGame() {
                                         }
                                         openSaveModal('save');
                                     }}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors shrink-0"
                                     title="存档"
                                 >
-                                    <Save size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <Save size={16} />
                                 </button>
                                 <button
                                     onClick={() => {
@@ -703,10 +703,10 @@ export default function AncientLoveGame() {
                                         }
                                         openSaveModal('load');
                                     }}
-                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors shrink-0"
                                     title="读档"
                                 >
-                                    <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
+                                    <RotateCcw size={16} />
                                 </button>
                             </div>
                         </div>
@@ -735,17 +735,17 @@ export default function AncientLoveGame() {
 
                         {/* 选项区域 - 在对话流中显示，仅在不loading时显示 */}
                         {!loading && suggestedOptions.length > 0 && (
-                            <div className="mt-3 mb-2">
+                            <div className="mt-2 mb-2">
                                 <div className="flex items-center gap-2 mb-2 text-stone-500">
                                     <Zap size={16} className="text-amber-500" />
                                     <span className="text-sm font-serif">你可以选择：</span>
                                 </div>
-                                <div className="grid gap-2">
+                                <div className="grid gap-1.5">
                                     {suggestedOptions.map((option, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => handleCommand(option)}
-                                            className="w-full text-left bg-stone-50/80 hover:bg-stone-100 border border-stone-200 hover:border-stone-400 rounded-lg py-2.5 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md group"
+                                            className="w-full text-left bg-stone-50/80 hover:bg-stone-100 border border-stone-200 hover:border-stone-400 rounded-lg py-2 px-4 font-serif text-sm text-stone-700 transition-all shadow-sm hover:shadow-md group"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-800 text-stone-50 flex items-center justify-center text-xs font-bold group-hover:bg-amber-600 transition-colors">
