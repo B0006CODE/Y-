@@ -65,16 +65,26 @@ export default function SaveModal({
     };
 
     const handleLoad = async (slot) => {
-        const result = await loadGame(userId, slot, gameMode);
-        if (result.success) {
-            onLoad(result.gameState);
-            setMessage({ type: 'success', text: result.message });
-            setTimeout(() => {
-                setMessage({ type: '', text: '' });
-                onClose();
-            }, 500);
-        } else {
-            setMessage({ type: 'error', text: result.message });
+        try {
+            const result = await loadGame(userId, slot, gameMode);
+            if (result.success) {
+                if (typeof onLoad === 'function') {
+                    onLoad(result.gameState);
+                    setMessage({ type: 'success', text: result.message });
+                    setTimeout(() => {
+                        setMessage({ type: '', text: '' });
+                        onClose();
+                    }, 500);
+                } else {
+                    console.error('SaveModal: onLoad callback is not defined');
+                    setMessage({ type: 'error', text: '读档功能未正确配置' });
+                }
+            } else {
+                setMessage({ type: 'error', text: result.message });
+            }
+        } catch (error) {
+            console.error('SaveModal: Error loading game:', error);
+            setMessage({ type: 'error', text: '读档失败: ' + (error.message || '未知错误') });
         }
     };
 
