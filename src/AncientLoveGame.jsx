@@ -735,8 +735,8 @@ export default function AncientLoveGame() {
 
                         {/* 选项区域 - 在对话流中显示，仅在不loading时显示 */}
                         {!loading && suggestedOptions.length > 0 && (
-                            <div className="mt-4 mb-2">
-                                <div className="flex items-center gap-2 mb-3 text-stone-500">
+                            <div className="mt-3 mb-2">
+                                <div className="flex items-center gap-2 mb-2 text-stone-500">
                                     <Zap size={16} className="text-amber-500" />
                                     <span className="text-sm font-serif">你可以选择：</span>
                                 </div>
@@ -745,7 +745,7 @@ export default function AncientLoveGame() {
                                         <button
                                             key={idx}
                                             onClick={() => handleCommand(option)}
-                                            className="w-full text-left bg-stone-50/80 hover:bg-stone-100 border border-stone-200 hover:border-stone-400 rounded-lg py-3 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md group"
+                                            className="w-full text-left bg-stone-50/80 hover:bg-stone-100 border border-stone-200 hover:border-stone-400 rounded-lg py-2.5 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md group"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-800 text-stone-50 flex items-center justify-center text-xs font-bold group-hover:bg-amber-600 transition-colors">
