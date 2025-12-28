@@ -218,6 +218,7 @@ html {
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -227,6 +228,30 @@ html {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(120, 113, 108, 0.3);
   border-radius: 2px;
+}
+
+/* 移动端工具栏滑动优化 */
+@media (max-width: 768px) {
+  .toolbar-scrollable {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+  }
+
+  .toolbar-scrollable::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+  }
+
+  /* 工具栏内容不换行 */
+  .toolbar-scrollable>* {
+    flex-shrink: 0;
+  }
 }
 
 /* Prevent zoom on input focus (iOS) */

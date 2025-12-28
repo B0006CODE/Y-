@@ -542,7 +542,7 @@ export default function SurvivalGame() {
                         </div>
 
                         {/* 第二行：工具栏 */}
-                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar pb-1">
+                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar toolbar-scrollable pb-1">
                             {/* 用户状态 */}
                             {currentUser ? (
                                 <>
