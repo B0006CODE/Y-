@@ -26,3 +26,8 @@ dist-ssr
 # Server data
 server/.env
 server/data.sqlite*
+
+# Resource folders
+《凤鸣九霄》修改资源/
+冰封之心资源/
+AI文游自动化创作平台/
