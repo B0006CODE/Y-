@@ -238,6 +238,42 @@ export const deleteSave = async (userId, slot, gameMode = 'story') => {
  * 获取最大存档槽位数
  */
 export const getMaxSlots = () => MAX_SLOTS;
+
+/**
+ * 获取用户最新的存档
+ * @param {string} userId - 用户名
+ * @param {string} gameMode - 游戏模式
+ * @returns {{ success: boolean, exists: boolean, gameState?: object }}
+ */
+export const getLatestSave = async (userId, gameMode = 'story') => {
+    if (!userId) return { success: false, exists: false, gameState: null };
+
+    if (IS_SERVER_MODE) {
+        return fetchJson(`${API_BASE_URL}/saves/latest?gameMode=${gameMode}`, { method: 'GET' });
+    }
+
+    // 本地模式：找最近的存档
+    const saves = getAllSaves(gameMode);
+    const userSaves = saves[userId];
+    if (!userSaves) return { success: true, exists: false, gameState: null };
+
+    let latestSave = null;
+    let latestTime = 0;
+
+    for (const slot in userSaves) {
+        const save = userSaves[slot];
+        if (save?.savedAt) {
+            const time = new Date(save.savedAt).getTime();
+            if (time > latestTime) {
+                latestTime = time;
+                latestSave = save.gameState;
+            }
+        }
+    }
+
+    if (!latestSave) return { success: true, exists: false, gameState: null };
+    return { success: true, exists: true, gameState: latestSave };
+};
 import { getAuthToken } from './authService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;

@@ -295,6 +295,30 @@ app.post('/api/saves/:slot', requireAuth, (req, res) => {
     });
 });
 
+app.get('/api/saves/latest', requireAuth, (req, res) => {
+    (async () => {
+        const gameMode = normalizeMode(req.query.gameMode);
+        const [rows] = await pool.execute(
+            'SELECT game_state FROM saves WHERE user_id = ? AND game_mode = ? ORDER BY saved_at DESC LIMIT 1',
+            [req.user.id, gameMode]
+        );
+
+        if (!rows.length) {
+            return res.json({ success: true, exists: false, gameState: null });
+        }
+
+        const gameState = safeParse(rows[0].game_state, null);
+        if (!gameState) {
+            return res.json({ success: true, exists: false, gameState: null });
+        }
+
+        return res.json({ success: true, exists: true, gameState });
+    })().catch(err => {
+        console.error('Get latest save error:', err);
+        res.status(500).json({ success: false, message: '获取最新存档失败' });
+    });
+});
+
 app.get('/api/saves/:slot', requireAuth, (req, res) => {
     (async () => {
         const slot = Number.parseInt(req.params.slot, 10);
@@ -353,7 +377,7 @@ app.delete('/api/saves/:slot', requireAuth, (req, res) => {
 app.post('/api/v1/chat/completions', async (req, res) => {
     try {
         if (LLM_REQUIRE_AUTH) {
-            requireAuth(req, res, () => {});
+            requireAuth(req, res, () => { });
             if (res.headersSent) return;
         }
 

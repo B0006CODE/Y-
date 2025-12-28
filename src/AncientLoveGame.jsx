@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Heart, Shield, Crown, Sparkles, Scroll, AlertTriangle, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, MessageSquare, Zap } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
-import { getSaveSlots } from './services/saveService';
+import { getSaveSlots, getLatestSave } from './services/saveService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/storyConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateEnding } from './services/endingService';
@@ -771,10 +771,28 @@ export default function AncientLoveGame() {
             </div >
 
             {/* 登录/注册弹窗 */}
-            < AuthModal
+            <AuthModal
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
-                onSuccess={(user) => setCurrentUser(user)}
+                onSuccess={async (user) => {
+                    setCurrentUser(user);
+                    // 自动加载最新存档
+                    try {
+                        const result = await getLatestSave(user.username, 'story');
+                        if (result.success && result.exists && result.gameState) {
+                            const gs = result.gameState;
+                            if (gs.stats) setStats(gs.stats);
+                            if (gs.history) setHistory(gs.history);
+                            if (gs.currentScene) setCurrentScene(gs.currentScene);
+                            if (gs.currentChapter) setCurrentChapter(gs.currentChapter);
+                            if (gs.detailedAffinity) setDetailedAffinity(gs.detailedAffinity);
+                            if (gs.unlockedCGs) setUnlockedCGs(gs.unlockedCGs);
+                            gameInitialized.current = true;
+                        }
+                    } catch (error) {
+                        console.error('自动加载存档失败:', error);
+                    }
+                }}
             />
 
             {/* 存档弹窗 */}

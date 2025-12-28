@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Heart, Thermometer, Brain, Package, Save, RotateCcw, Send, Loader2, User, LogOut, Settings, Image as ImageIcon, BookOpen, History, Gamepad2, Zap, Utensils, Sliders } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { generateGameResponse, resetHistorySummaryCache } from './services/llmService';
-import { getSaveSlots } from './services/saveService';
+import { getSaveSlots, getLatestSave } from './services/saveService';
 import { CHARACTER_NAME_MAP, SCENES, CHARACTERS, CHAPTERS } from './config/survivalConfig';
 import { getCurrentUser, logout } from './services/authService';
 import { calculateSurvivalEnding } from './services/endingService';
@@ -632,7 +632,25 @@ export default function SurvivalGame() {
             </div>
 
             {/* Modals */}
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={(user) => setCurrentUser(user)} />
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={async (user) => {
+                setCurrentUser(user);
+                // 自动加载最新存档
+                try {
+                    const result = await getLatestSave(user.username, 'survival');
+                    if (result.success && result.exists && result.gameState) {
+                        const gs = result.gameState;
+                        if (gs.stats) setStats(gs.stats);
+                        if (gs.history) setHistory(gs.history);
+                        if (gs.currentScene) setCurrentScene(gs.currentScene);
+                        if (gs.currentChapter) setCurrentChapter(gs.currentChapter);
+                        if (gs.detailedAffinity) setDetailedAffinity(gs.detailedAffinity);
+                        if (gs.unlockedCGs) setUnlockedCGs(gs.unlockedCGs);
+                        gameInitialized.current = true;
+                    }
+                } catch (error) {
+                    console.error('自动加载存档失败:', error);
+                }
+            }} />
             <SaveModal
                 isOpen={showSaveModal}
                 onClose={() => setShowSaveModal(false)}
