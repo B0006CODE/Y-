@@ -541,49 +541,51 @@ export default function SurvivalGame() {
                             </div>
                         </div>
 
-                        {/* 第二行：工具栏 */}
-                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar toolbar-scrollable pb-1">
-                            {/* 用户状态 */}
-                            {currentUser ? (
-                                <>
-                                    <span className="text-xs text-slate-500 hidden md:inline mr-1 shrink-0">{currentUser.username}</span>
-                                    <button onClick={() => { logout(); setCurrentUser(null); }} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="退出登录"><LogOut size={16} /></button>
-                                </>
-                            ) : (
-                                <button onClick={() => setShowAuthModal(true)} className="px-2 py-1 bg-cyan-900 text-cyan-100 rounded-sm text-xs hover:bg-cyan-800 flex items-center gap-1 shrink-0"><User size={14} /> <span className="hidden sm:inline">登录</span></button>
-                            )}
-                            <button onClick={() => setShowProfile(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="人物档案"><BookOpen size={16} /></button>
-                            <button onClick={() => setShowGallery(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="CG画廊"><ImageIcon size={16} /></button>
-                            <button onClick={() => setShowHistoryModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="对话历史"><History size={16} /></button>
-                            <button onClick={() => setShowGameSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="游戏设置"><Sliders size={16} /></button>
-                            <button onClick={() => setShowSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="API设置"><Settings size={16} /></button>
-                            {/* 存档/读档按钮 - 放在最右侧确保移动端可见 */}
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('save');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
-                                title="存档"
-                            >
-                                <Save size={16} />
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('load');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
-                                title="读档"
-                            >
-                                <RotateCcw size={16} />
-                            </button>
+                        {/* 第二行：工具栏 - 可滚动 */}
+                        <div className="overflow-x-auto custom-scrollbar toolbar-scrollable pb-1 -mx-1">
+                            <div className="flex gap-1 md:gap-2 items-center px-1 min-w-max">
+                                {/* 用户状态 */}
+                                {currentUser ? (
+                                    <>
+                                        <span className="text-xs text-slate-500 hidden md:inline mr-1 shrink-0">{currentUser.username}</span>
+                                        <button onClick={() => { logout(); setCurrentUser(null); }} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="退出登录"><LogOut size={16} /></button>
+                                    </>
+                                ) : (
+                                    <button onClick={() => setShowAuthModal(true)} className="px-2 py-1 bg-cyan-900 text-cyan-100 rounded-sm text-xs hover:bg-cyan-800 flex items-center gap-1 shrink-0"><User size={14} /> <span className="hidden sm:inline">登录</span></button>
+                                )}
+                                <button onClick={() => setShowProfile(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="人物档案"><BookOpen size={16} /></button>
+                                <button onClick={() => setShowGallery(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="CG画廊"><ImageIcon size={16} /></button>
+                                <button onClick={() => setShowHistoryModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="对话历史"><History size={16} /></button>
+                                <button onClick={() => setShowGameSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="游戏设置"><Sliders size={16} /></button>
+                                <button onClick={() => setShowSettingsModal(true)} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="API设置"><Settings size={16} /></button>
+                                {/* 存档/读档按钮 */}
+                                <button
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            setShowAuthModal(true);
+                                            return;
+                                        }
+                                        openSaveModal('save');
+                                    }}
+                                    className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
+                                    title="存档"
+                                >
+                                    <Save size={16} />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            setShowAuthModal(true);
+                                            return;
+                                        }
+                                        openSaveModal('load');
+                                    }}
+                                    className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
+                                    title="读档"
+                                >
+                                    <RotateCcw size={16} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 

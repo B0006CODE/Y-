@@ -618,95 +618,97 @@ export default function AncientLoveGame() {
                                 <span className="text-xs text-stone-500">{plotProgress}%</span>
                             </div>
                         </div>
-                        {/* 第二行：工具栏 */}
-                        <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar toolbar-scrollable pb-1">
-                            {/* 用户状态 */}
-                            {currentUser ? (
-                                <>
-                                    <span className="text-xs text-stone-500 font-serif hidden md:inline shrink-0">
-                                        {currentUser.username}
-                                    </span>
+                        {/* 第二行：工具栏 - 可滚动 */}
+                        <div className="overflow-x-auto custom-scrollbar toolbar-scrollable pb-1 -mx-1">
+                            <div className="flex gap-1 md:gap-2 items-center px-1 min-w-max">
+                                {/* 用户状态 */}
+                                {currentUser ? (
+                                    <>
+                                        <span className="text-xs text-stone-500 font-serif hidden md:inline shrink-0">
+                                            {currentUser.username}
+                                        </span>
+                                        <button
+                                            onClick={() => { logout(); setCurrentUser(null); }}
+                                            className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                            title="退出登录"
+                                        >
+                                            <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
+                                        </button>
+                                    </>
+                                ) : (
                                     <button
-                                        onClick={() => { logout(); setCurrentUser(null); }}
-                                        className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                        title="退出登录"
+                                        onClick={() => setShowAuthModal(true)}
+                                        className="px-2 py-1 md:px-3 md:py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1 shrink-0"
                                     >
-                                        <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
+                                        <User size={14} />
+                                        <span className="hidden sm:inline">登录</span>
                                     </button>
-                                </>
-                            ) : (
+                                )}
                                 <button
-                                    onClick={() => setShowAuthModal(true)}
-                                    className="px-2 py-1 md:px-3 md:py-1.5 bg-stone-800 text-stone-50 rounded-sm text-xs font-serif hover:bg-stone-700 transition-colors flex items-center gap-1 shrink-0"
+                                    onClick={() => setShowProfile(true)}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    title="人物志"
                                 >
-                                    <User size={14} />
-                                    <span className="hidden sm:inline">登录</span>
+                                    <BookOpen size={16} className="md:w-[18px] md:h-[18px]" />
                                 </button>
-                            )}
-                            <button
-                                onClick={() => setShowProfile(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                title="人物志"
-                            >
-                                <BookOpen size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            <button
-                                onClick={() => setShowGallery(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                title="珍藏画卷"
-                            >
-                                <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            <button
-                                onClick={() => setShowSettingsModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                title="API 设置"
-                            >
-                                <Settings size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            {/* 游戏设置按钮 */}
-                            <button
-                                onClick={() => setShowGameSettingsModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                title="游戏设置"
-                            >
-                                <Gamepad2 size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            {/* 历史记录按钮 */}
-                            <button
-                                onClick={() => setShowHistoryModal(true)}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
-                                title="对话回顾"
-                            >
-                                <History size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            {/* 存档/读档按钮 - 放在最右侧确保移动端可见 */}
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('save');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
-                                title="存档"
-                            >
-                                <Save size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('load');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
-                                title="读档"
-                            >
-                                <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
+                                <button
+                                    onClick={() => setShowGallery(true)}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    title="珍藏画卷"
+                                >
+                                    <ImageIcon size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                                <button
+                                    onClick={() => setShowSettingsModal(true)}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    title="API 设置"
+                                >
+                                    <Settings size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                                {/* 游戏设置按钮 */}
+                                <button
+                                    onClick={() => setShowGameSettingsModal(true)}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    title="游戏设置"
+                                >
+                                    <Gamepad2 size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                                {/* 历史记录按钮 */}
+                                <button
+                                    onClick={() => setShowHistoryModal(true)}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600 touch-target shrink-0"
+                                    title="对话回顾"
+                                >
+                                    <History size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                                {/* 存档/读档按钮 */}
+                                <button
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            setShowAuthModal(true);
+                                            return;
+                                        }
+                                        openSaveModal('save');
+                                    }}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                    title="存档"
+                                >
+                                    <Save size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            setShowAuthModal(true);
+                                            return;
+                                        }
+                                        openSaveModal('load');
+                                    }}
+                                    className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                    title="读档"
+                                >
+                                    <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
