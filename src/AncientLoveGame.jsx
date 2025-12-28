@@ -620,33 +620,6 @@ export default function AncientLoveGame() {
                         </div>
                         {/* 第二行：工具栏 */}
                         <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar pb-1">
-                            {/* 存档/读档按钮 - 始终显示，点击时检查登录状态 */}
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('save');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
-                                title="存档"
-                            >
-                                <Save size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (!currentUser) {
-                                        setShowAuthModal(true);
-                                        return;
-                                    }
-                                    openSaveModal('load');
-                                }}
-                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
-                                title="读档"
-                            >
-                                <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
-                            </button>
                             {/* 用户状态 */}
                             {currentUser ? (
                                 <>
@@ -706,6 +679,33 @@ export default function AncientLoveGame() {
                                 title="对话回顾"
                             >
                                 <History size={16} className="md:w-[18px] md:h-[18px]" />
+                            </button>
+                            {/* 存档/读档按钮 - 放在最右侧确保移动端可见 */}
+                            <button
+                                onClick={() => {
+                                    if (!currentUser) {
+                                        setShowAuthModal(true);
+                                        return;
+                                    }
+                                    openSaveModal('save');
+                                }}
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                title="存档"
+                            >
+                                <Save size={16} className="md:w-[18px] md:h-[18px]" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!currentUser) {
+                                        setShowAuthModal(true);
+                                        return;
+                                    }
+                                    openSaveModal('load');
+                                }}
+                                className="p-1.5 md:p-2 hover:bg-stone-100 rounded-full transition-colors touch-target shrink-0"
+                                title="读档"
+                            >
+                                <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                         </div>
                     </div>
