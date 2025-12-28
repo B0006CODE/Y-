@@ -587,6 +587,10 @@ export default function SurvivalGame() {
                                 </button>
                             </div>
                         </div>
+                        {/* 移动端滑动指示条 */}
+                        <div className="md:hidden flex justify-center mt-1">
+                            <div className="w-12 h-1 bg-slate-600 rounded-full opacity-60"></div>
+                        </div>
                     </div>
 
                     {/* Chat Area */}
