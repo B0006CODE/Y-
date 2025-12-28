@@ -543,12 +543,38 @@ export default function SurvivalGame() {
 
                         {/* 第二行：工具栏 */}
                         <div className="flex gap-1 md:gap-2 items-center justify-end overflow-x-auto custom-scrollbar pb-1">
+                            {/* 存档/读档按钮 - 始终显示，点击时检查登录状态 */}
+                            <button
+                                onClick={() => {
+                                    if (!currentUser) {
+                                        setShowAuthModal(true);
+                                        return;
+                                    }
+                                    openSaveModal('save');
+                                }}
+                                className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
+                                title="存档"
+                            >
+                                <Save size={16} />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!currentUser) {
+                                        setShowAuthModal(true);
+                                        return;
+                                    }
+                                    openSaveModal('load');
+                                }}
+                                className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"
+                                title="读档"
+                            >
+                                <RotateCcw size={16} />
+                            </button>
+                            {/* 用户状态 */}
                             {currentUser ? (
                                 <>
                                     <span className="text-xs text-slate-500 hidden md:inline mr-1 shrink-0">{currentUser.username}</span>
-                                    <button onClick={() => openSaveModal('save')} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><Save size={16} /></button>
-                                    <button onClick={() => openSaveModal('load')} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><RotateCcw size={16} /></button>
-                                    <button onClick={() => { logout(); setCurrentUser(null); }} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0"><LogOut size={16} /></button>
+                                    <button onClick={() => { logout(); setCurrentUser(null); }} className="p-1.5 md:p-2 hover:bg-slate-800 rounded-full transition-colors shrink-0" title="退出登录"><LogOut size={16} /></button>
                                 </>
                             ) : (
                                 <button onClick={() => setShowAuthModal(true)} className="px-2 py-1 bg-cyan-900 text-cyan-100 rounded-sm text-xs hover:bg-cyan-800 flex items-center gap-1 shrink-0"><User size={14} /> <span className="hidden sm:inline">登录</span></button>
