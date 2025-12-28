@@ -745,7 +745,7 @@ export default function AncientLoveGame() {
                                         <button
                                             key={idx}
                                             onClick={() => handleCommand(option)}
-                                            className="w-full text-left bg-gradient-to-r from-stone-50 to-stone-100 hover:from-stone-100 hover:to-stone-200 border border-stone-200 hover:border-stone-300 rounded-lg py-3 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 active:translate-y-0 group"
+                                            className="w-full text-left bg-stone-50/80 hover:bg-stone-100 border border-stone-200 hover:border-stone-400 rounded-lg py-3 px-4 font-serif text-stone-700 transition-all shadow-sm hover:shadow-md group"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-800 text-stone-50 flex items-center justify-center text-xs font-bold group-hover:bg-amber-600 transition-colors">
