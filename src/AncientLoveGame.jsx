@@ -752,7 +752,6 @@ export default function AncientLoveGame() {
                                                     {idx + 1}
                                                 </span>
                                                 <span className="flex-1">{option}</span>
-                                                <Zap size={14} className="text-stone-400 group-hover:text-amber-500 transition-colors" />
                                             </div>
                                         </button>
                                     ))}
